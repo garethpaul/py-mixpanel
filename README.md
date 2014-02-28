@@ -1,7 +1,7 @@
 py-mixpanel
 ===========
 
-Track events with mixpanel. 
+Track events with mixpanel. Non official.
 
 
 USAGE
