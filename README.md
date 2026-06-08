@@ -1,3 +1,8 @@
+# py-mixpanel
+
+<!-- README-OVERVIEW-IMAGE -->
+![Project overview](docs/readme-overview.svg)
+
 py-mixpanel
 ===========
 
