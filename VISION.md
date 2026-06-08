@@ -39,7 +39,7 @@ Analytics libraries can leak user identifiers and behavior. This wrapper should
 make tracking explicit, keep credentials out of source control, and avoid
 background event submission that callers did not request.
 
-## What We Will Not Merge For Now
+## What We Will Not Merge (For Now)
 
 - Hidden tracking or automatic event collection
 - Checked-in tokens or API keys
