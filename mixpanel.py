@@ -1,8 +1,8 @@
 """
 Event tracking - basic for mixpanel
 """
-TRACK_BASE_URL = "http://api.mixpanel.com/track/?data=%s"
-ARCHIVE_BASE_URL = "http://api.mixpanel.com/import/?data=%s&api_key=%s"
+TRACK_BASE_URL = "https://api.mixpanel.com/track/?data=%s"
+ARCHIVE_BASE_URL = "https://api.mixpanel.com/import/?data=%s&api_key=%s"
 import urllib2
 import json
 import base64
