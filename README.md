@@ -12,21 +12,26 @@ This README is based on the checked-in source, manifests, scripts, and repositor
 ## Repository Contents
 
 - `README.md` - project overview and local usage notes
+- `CHANGES.md` - notable maintenance changes
+- `Makefile` - local verification entry points
+- `plans` - completed maintenance plans
+- `test_mixpanel.py` - mocked HTTP regression tests
 - `SECURITY.md` - security reporting and disclosure guidance
 - `VISION.md` - project direction and maintenance guardrails
 
 Additional scan context:
 
 - Source directories: no top-level source directories detected
-- Dependency and build manifests: none detected
-- Entry points or build surfaces: none detected
-- Test-looking files: no obvious test files detected
+- Dependency and build manifests: Makefile
+- Entry points or build surfaces: mixpanel.py, Makefile
+- Test-looking files: test_mixpanel.py
 
 ## Getting Started
 
 ### Prerequisites
 
 - Git
+- Python 2.7 and `make`
 
 ### Setup
 
@@ -39,11 +44,14 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 
 ## Running or Using the Project
 
-- No single runtime entry point was identified. Start by reading the source files and manifests listed above.
+- Import `EventTracker` from `mixpanel.py`.
+- Call `track(event, properties)` only after the caller has explicit consent and a caller-provided `distinct_id`.
+- Use `track_async` only when background submission is expected by the caller.
 
 ## Testing and Verification
 
-- No dedicated automated test command was identified from the checked-in files. Verify changes by running the relevant build or manually exercising the sample.
+- Run `make verify` before committing changes.
+- The verification gate compile-checks the legacy Python 2 files and runs mocked HTTP tests for tracking and import URLs.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 

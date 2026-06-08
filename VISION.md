@@ -17,11 +17,12 @@ Priority:
 - Preserve the `EventTracker.track` and `track_async` API shape
 - Keep token and API-key handling caller-controlled
 - Avoid collecting analytics without explicit caller action
+- Maintain `make verify` with mocked HTTP coverage
 - Treat `urllib2` and Python 2 idioms as legacy constraints
 
 Next priorities:
 
-- Add mock HTTP tests for track and import URLs
+- Add more mock HTTP tests for error handling and async callback behavior
 - Return or expose request errors instead of swallowing response details
 - Document Python version and Mixpanel API assumptions
 - Add guidance for user consent and distinct ID handling

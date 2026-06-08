@@ -1,9 +1,10 @@
 """
 Event tracking - basic for mixpanel
 """
-TRACK_BASE_URL = "http://api.mixpanel.com/track/?data=%s"
-ARCHIVE_BASE_URL = "http://api.mixpanel.com/import/?data=%s&api_key=%s"
+TRACK_BASE_URL = "https://api.mixpanel.com/track/?data=%s"
+ARCHIVE_BASE_URL = "https://api.mixpanel.com/import/?data=%s&api_key=%s"
 import urllib2
+import urllib
 import json
 import base64
 import time
@@ -44,9 +45,9 @@ class EventTracker(object):
     assert(properties.has_key("distinct_id")), "Must specify a distinct ID"
 
     params = {"event": event, "properties": properties}
-    data = base64.b64encode(json.dumps(params))
+    data = urllib.quote(base64.b64encode(json.dumps(params)), safe='')
     if self.api_key:
-      resp = urllib2.urlopen(ARCHIVE_BASE_URL % (data, self.api_key))
+      resp = urllib2.urlopen(ARCHIVE_BASE_URL % (data, urllib.quote(self.api_key, safe='')))
     else:
       resp = urllib2.urlopen(TRACK_BASE_URL % data)
     resp.read()
