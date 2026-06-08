@@ -71,4 +71,4 @@ Keep changes small and tied to the project that is already present in this repos
 
 Prior README summary:
 
-> py-mixpanel <!-- README-OVERVIEW-IMAGE --> py-mixpanel =========== Track events with mixpanel. Non official. USAGE ===== METHOD
+> py-mixpanel py-mixpanel =========== Track events with mixpanel. Non official. USAGE ===== METHOD
