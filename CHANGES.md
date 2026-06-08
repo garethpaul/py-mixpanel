@@ -2,6 +2,8 @@
 
 ## 2026-06-08
 
+- Added mocked request-error coverage so failed sends propagate and skip
+  callbacks.
 - Replaced `distinct_id` assert validation with an explicit `ValueError` and
   added default request timeout coverage.
 - Added mocked Python 2 tests for `EventTracker.track` and API-key-backed import calls.

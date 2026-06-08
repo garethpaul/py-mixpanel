@@ -24,13 +24,13 @@ Priority:
 - Avoid collecting analytics without explicit caller action
 - Maintain `make check` with mocked HTTP coverage
 - Reject events without caller-provided `distinct_id` before any request
+- Keep request failure behavior visible to callers and covered by mocks
 - Keep request timeouts explicit
 - Treat `urllib2` and Python 2 idioms as legacy constraints
 - Keep completed maintenance plans under `docs/plans`
 
 Next priorities:
 
-- Add more mock HTTP tests for error handling
 - Return or expose request errors instead of swallowing response details
 - Document Python version and Mixpanel API assumptions
 - Add deeper guidance for user consent and distinct ID handling

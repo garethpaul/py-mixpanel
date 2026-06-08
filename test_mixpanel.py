@@ -80,6 +80,28 @@ class EventTrackerTest(unittest.TestCase):
 
         self.assertEqual([], self.urls)
 
+    def test_track_propagates_request_errors_without_callback(self):
+        callbacks = []
+        tracker = mixpanel.EventTracker("project-token")
+
+        def failing_urlopen(url, timeout=None):
+            self.urls.append(url)
+            self.timeouts.append(timeout)
+            raise mixpanel.urllib2.URLError("network unavailable")
+
+        mixpanel.urllib2.urlopen = failing_urlopen
+
+        with self.assertRaises(mixpanel.urllib2.URLError):
+            tracker.track(
+                "Request Failed",
+                {"distinct_id": "user-4"},
+                lambda event, properties: callbacks.append((event, properties)),
+            )
+
+        self.assertEqual(1, len(self.urls))
+        self.assertEqual([mixpanel.REQUEST_TIMEOUT_SECONDS], self.timeouts)
+        self.assertEqual([], callbacks)
+
     def test_import_posts_https_payload_with_api_key(self):
         tracker = mixpanel.EventTracker("project-token", api_key="api-secret")
 
