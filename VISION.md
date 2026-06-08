@@ -17,7 +17,7 @@ Priority:
 - Preserve the `EventTracker.track` and `track_async` API shape
 - Keep token and API-key handling caller-controlled
 - Avoid collecting analytics without explicit caller action
-- Maintain `make verify` with mocked HTTP coverage
+- Maintain `make check` with mocked HTTP coverage
 - Treat `urllib2` and Python 2 idioms as legacy constraints
 
 Next priorities:

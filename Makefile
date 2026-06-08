@@ -1,4 +1,4 @@
-.PHONY: lint test verify
+.PHONY: check lint test verify
 
 lint:
 	python2 -c "import py_compile; py_compile.compile('mixpanel.py', cfile='/tmp/py-mixpanel-mixpanel.pyc', doraise=True)"
@@ -8,3 +8,5 @@ test:
 	python2 -m unittest test_mixpanel
 
 verify: lint test
+
+check: verify
