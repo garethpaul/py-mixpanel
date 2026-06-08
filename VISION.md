@@ -45,3 +45,6 @@ background event submission that callers did not request.
 - Checked-in tokens or API keys
 - Live-network-only tests
 - Payload logging that exposes user identifiers
+
+This list is a roadmap guardrail, not a permanent rule.
+Strong user demand and strong technical rationale can change it.
