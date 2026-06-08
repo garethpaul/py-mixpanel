@@ -2,6 +2,8 @@
 
 ## 2026-06-08
 
+- Replaced `distinct_id` assert validation with an explicit `ValueError` and
+  added default request timeout coverage.
 - Added mocked Python 2 tests for `EventTracker.track` and API-key-backed import calls.
 - Switched Mixpanel track/import endpoints from HTTP to HTTPS.
 - URL-escaped the encoded payload and API key before building Mixpanel request URLs.

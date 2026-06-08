@@ -3,11 +3,17 @@ Event tracking - basic for mixpanel
 """
 TRACK_BASE_URL = "https://api.mixpanel.com/track/?data=%s"
 ARCHIVE_BASE_URL = "https://api.mixpanel.com/import/?data=%s&api_key=%s"
+REQUEST_TIMEOUT_SECONDS = 10
 import urllib2
 import urllib
 import json
 import base64
 import time
+
+
+def open_mixpanel_url(url):
+  return urllib2.urlopen(url, timeout=REQUEST_TIMEOUT_SECONDS)
+
 
 class EventTracker(object):
   """Simple Event Tracker
@@ -42,14 +48,15 @@ class EventTracker(object):
     if not properties.has_key("time"):
       properties['time'] = int(time.time())
 
-    assert(properties.has_key("distinct_id")), "Must specify a distinct ID"
+    if not properties.has_key("distinct_id"):
+      raise ValueError("Must specify a distinct ID")
 
     params = {"event": event, "properties": properties}
     data = urllib.quote(base64.b64encode(json.dumps(params)), safe='')
     if self.api_key:
-      resp = urllib2.urlopen(ARCHIVE_BASE_URL % (data, urllib.quote(self.api_key, safe='')))
+      resp = open_mixpanel_url(ARCHIVE_BASE_URL % (data, urllib.quote(self.api_key, safe='')))
     else:
-      resp = urllib2.urlopen(TRACK_BASE_URL % data)
+      resp = open_mixpanel_url(TRACK_BASE_URL % data)
     resp.read()
 
     if callback is not None:

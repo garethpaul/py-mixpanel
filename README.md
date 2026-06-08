@@ -47,12 +47,14 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 
 - Import `EventTracker` from `mixpanel.py`.
 - Call `track(event, properties)` only after the caller has explicit consent and a caller-provided `distinct_id`.
+- Calls without a `distinct_id` raise `ValueError` before any HTTP request.
+- Mixpanel HTTP requests use a ten-second timeout by default.
 - Use `track_async` only when background submission is expected by the caller.
 
 ## Testing and Verification
 
 - Run `make check` before committing changes.
-- `make check` delegates to `make verify`, which compile-checks the legacy Python 2 files, runs mocked HTTP tests for tracking, import URLs, and async callback behavior, and verifies the canonical completed plan under `docs/plans`.
+- `make check` delegates to `make verify`, which compile-checks the legacy Python 2 files, runs mocked HTTP tests for tracking, import URLs, request validation, request timeouts, and async callback behavior, and verifies completed plans under `docs/plans`.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
@@ -73,6 +75,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - See `VISION.md` for project direction and contribution guardrails.
 - See `docs/plans/2026-06-08-py-mixpanel-baseline.md` for the canonical
   mocked Mixpanel tracking baseline.
+- See `docs/plans/2026-06-08-request-validation-and-timeout.md` for the
+  distinct ID and request-timeout guard baseline.
 
 ## Contributing
 

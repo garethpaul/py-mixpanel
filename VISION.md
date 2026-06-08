@@ -11,8 +11,9 @@ The goal is to keep the wrapper understandable while making analytics,
 identity, and Python 2-era assumptions explicit.
 
 Current baseline: `make check` verifies Python 2 syntax, mocked HTTPS tracking
-and import requests, async callback behavior, and canonical `docs/plans`
-coverage without contacting Mixpanel.
+and import requests, distinct ID validation, request timeout behavior, async
+callback behavior, and completed `docs/plans` coverage without contacting
+Mixpanel.
 
 The current focus is:
 
@@ -22,6 +23,8 @@ Priority:
 - Keep token and API-key handling caller-controlled
 - Avoid collecting analytics without explicit caller action
 - Maintain `make check` with mocked HTTP coverage
+- Reject events without caller-provided `distinct_id` before any request
+- Keep request timeouts explicit
 - Treat `urllib2` and Python 2 idioms as legacy constraints
 - Keep completed maintenance plans under `docs/plans`
 
@@ -30,7 +33,7 @@ Next priorities:
 - Add more mock HTTP tests for error handling
 - Return or expose request errors instead of swallowing response details
 - Document Python version and Mixpanel API assumptions
-- Add guidance for user consent and distinct ID handling
+- Add deeper guidance for user consent and distinct ID handling
 
 Contribution rules:
 

@@ -29,6 +29,7 @@ class FakeThread(object):
 class EventTrackerTest(unittest.TestCase):
     def setUp(self):
         self.urls = []
+        self.timeouts = []
         self.original_urlopen = mixpanel.urllib2.urlopen
         self.original_time = mixpanel.time.time
         mixpanel.urllib2.urlopen = self.urlopen
@@ -38,8 +39,9 @@ class EventTrackerTest(unittest.TestCase):
         mixpanel.urllib2.urlopen = self.original_urlopen
         mixpanel.time.time = self.original_time
 
-    def urlopen(self, url):
+    def urlopen(self, url, timeout=None):
         self.urls.append(url)
+        self.timeouts.append(timeout)
         return FakeResponse()
 
     def payload_from_url(self, url):
@@ -67,7 +69,16 @@ class EventTrackerTest(unittest.TestCase):
         self.assertEqual("project-token", payload["properties"]["token"])
         self.assertEqual("user-1", payload["properties"]["distinct_id"])
         self.assertEqual(1234567890, payload["properties"]["time"])
+        self.assertEqual([mixpanel.REQUEST_TIMEOUT_SECONDS], self.timeouts)
         self.assertEqual([("Signed Up", payload["properties"])], callbacks)
+
+    def test_track_requires_distinct_id_without_optimized_asserts(self):
+        tracker = mixpanel.EventTracker("project-token")
+
+        with self.assertRaises(ValueError):
+            tracker.track("Missing ID", {})
+
+        self.assertEqual([], self.urls)
 
     def test_import_posts_https_payload_with_api_key(self):
         tracker = mixpanel.EventTracker("project-token", api_key="api-secret")
@@ -80,6 +91,7 @@ class EventTrackerTest(unittest.TestCase):
         self.assertEqual(["api-secret"], query["api_key"])
         self.assertEqual("Imported", payload["event"])
         self.assertEqual("project-token", payload["properties"]["token"])
+        self.assertEqual([mixpanel.REQUEST_TIMEOUT_SECONDS], self.timeouts)
 
     def test_track_async_posts_payload_and_runs_callback(self):
         callbacks = []
@@ -108,6 +120,7 @@ class EventTrackerTest(unittest.TestCase):
         self.assertEqual("Async Event", payload["event"])
         self.assertEqual("project-token", payload["properties"]["token"])
         self.assertEqual("user-3", payload["properties"]["distinct_id"])
+        self.assertEqual([mixpanel.REQUEST_TIMEOUT_SECONDS], self.timeouts)
         self.assertEqual([("Async Event", payload["properties"])], callbacks)
 
 
