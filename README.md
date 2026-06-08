@@ -1,30 +1,72 @@
 # py-mixpanel
 
-<!-- README-OVERVIEW-IMAGE -->
-![Project overview](docs/readme-overview.svg)
+## Overview
 
-py-mixpanel
-===========
+`garethpaul/py-mixpanel` is a public sample, documentation, or utility project. Track events with mixpanel
 
-Track events with mixpanel. Non official.
+This README is based on the checked-in source, manifests, scripts, and repository metadata on the `master` branch. The project language mix found during review was: Python (1).
 
+## Repository Contents
 
-USAGE
-=====
+- `README.md` - project overview and local usage notes
+- `SECURITY.md` - security reporting and disclosure guidance
+- `VISION.md` - project direction and maintenance guardrails
 
+Additional scan context:
 
-`````python
-tracker = EventTracker(TOKEN)
-tracker.track_async("My Event", {
-   "distinct_id": "some_unique_id", 
-   "mp_tag_name": "My User Name",
-   "my_property": "some value"
-   "some_int_value": 0,
-})
-`````
+- Source directories: no top-level source directories detected
+- Dependency and build manifests: none detected
+- Entry points or build surfaces: none detected
+- Test-looking files: no obvious test files detected
 
+## Getting Started
 
-METHOD
-======
+### Prerequisites
 
-Sends requests to track "My Event" or "Any Events" asynchronously.
+- Git
+
+### Setup
+
+```bash
+git clone https://github.com/garethpaul/py-mixpanel.git
+cd py-mixpanel
+```
+
+The setup commands above are derived from repository files. Legacy mobile, Python, or JavaScript samples may require older SDKs or package versions than a modern workstation uses by default.
+
+## Running or Using the Project
+
+- No single runtime entry point was identified. Start by reading the source files and manifests listed above.
+
+## Testing and Verification
+
+- No dedicated automated test command was identified from the checked-in files. Verify changes by running the relevant build or manually exercising the sample.
+
+When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
+
+## Configuration and Secrets
+
+- Detected references to Mixpanel. Keep API keys, OAuth credentials, tokens, and account-specific values in local configuration only.
+
+## Security and Privacy Notes
+
+- Review changes touching authentication or token handling; examples from the scan include mixpanel.py.
+- Review changes touching external API calls or credential-adjacent configuration; examples from the scan include mixpanel.py.
+- Review changes touching network requests, sockets, or service endpoints; examples from the scan include mixpanel.py.
+- Review changes touching file, media, JSON, XML, CSV, OCR, or data parsing; examples from the scan include mixpanel.py.
+
+## Maintenance Notes
+
+- See `SECURITY.md` for vulnerability reporting and safe research guidance.
+- See `VISION.md` for project direction and contribution guardrails.
+
+## Contributing
+
+Keep changes small and tied to the project that is already present in this repository. For code changes, document the toolchain used, avoid committing generated dependency directories or local configuration, and update this README when setup or verification steps change.
+
+## Existing Project Notes
+
+Prior README summary:
+
+> py-mixpanel <!-- README-OVERVIEW-IMAGE --> py-mixpanel =========== Track events with mixpanel. Non official. USAGE ===== METHOD
+
