@@ -3,6 +3,7 @@ Event tracking - basic for mixpanel
 """
 TRACK_BASE_URL = "http://api.mixpanel.com/track/?data=%s"
 ARCHIVE_BASE_URL = "http://api.mixpanel.com/import/?data=%s&api_key=%s"
+DEFAULT_TIMEOUT = 10
 import urllib2
 import json
 import base64
@@ -13,13 +14,14 @@ class EventTracker(object):
   Designed to be generic, but currently uses Mixpanel
   to actually handle the tracking of the events
   """
-  def __init__(self, token, api_key=None):
+  def __init__(self, token, api_key=None, timeout=DEFAULT_TIMEOUT):
     """Create a new event tracker
     :param token: The auth token to use to validate each request
     :type token: str
     """
     self.token = token
     self.api_key = api_key
+    self.timeout = timeout
 
   def track(self, event, properties=None, callback=None):
     """Track a single event
@@ -46,9 +48,11 @@ class EventTracker(object):
     params = {"event": event, "properties": properties}
     data = base64.b64encode(json.dumps(params))
     if self.api_key:
-      resp = urllib2.urlopen(ARCHIVE_BASE_URL % (data, self.api_key))
+      resp = urllib2.urlopen(ARCHIVE_BASE_URL % (data, self.api_key),
+                             timeout=self.timeout)
     else:
-      resp = urllib2.urlopen(TRACK_BASE_URL % data)
+      resp = urllib2.urlopen(TRACK_BASE_URL % data,
+                             timeout=self.timeout)
     resp.read()
 
     if callback is not None:
