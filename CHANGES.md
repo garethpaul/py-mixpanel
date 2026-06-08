@@ -7,3 +7,5 @@
 - URL-escaped the encoded payload and API key before building Mixpanel request URLs.
 - Added `make verify` and `make check` for legacy syntax checks and mocked regression tests.
 - Added deterministic `track_async` callback coverage using a fake thread and mocked HTTP request.
+- Added canonical `docs/plans` coverage and made `make verify` require the
+  completed baseline plan.

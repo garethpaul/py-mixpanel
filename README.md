@@ -14,6 +14,7 @@ This README is based on the checked-in source, manifests, scripts, and repositor
 - `README.md` - project overview and local usage notes
 - `CHANGES.md` - notable maintenance changes
 - `Makefile` - local verification entry points
+- `docs/plans` - canonical completed maintenance plans
 - `plans` - completed maintenance plans
 - `test_mixpanel.py` - mocked HTTP regression tests
 - `SECURITY.md` - security reporting and disclosure guidance
@@ -51,7 +52,7 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 ## Testing and Verification
 
 - Run `make check` before committing changes.
-- `make check` delegates to `make verify`, which compile-checks the legacy Python 2 files and runs mocked HTTP tests for tracking, import URLs, and async callback behavior.
+- `make check` delegates to `make verify`, which compile-checks the legacy Python 2 files, runs mocked HTTP tests for tracking, import URLs, and async callback behavior, and verifies the canonical completed plan under `docs/plans`.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
@@ -70,6 +71,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
 
 - See `SECURITY.md` for vulnerability reporting and safe research guidance.
 - See `VISION.md` for project direction and contribution guardrails.
+- See `docs/plans/2026-06-08-py-mixpanel-baseline.md` for the canonical
+  mocked Mixpanel tracking baseline.
 
 ## Contributing
 

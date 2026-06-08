@@ -10,6 +10,10 @@ and API-key-backed import calls.
 The goal is to keep the wrapper understandable while making analytics,
 identity, and Python 2-era assumptions explicit.
 
+Current baseline: `make check` verifies Python 2 syntax, mocked HTTPS tracking
+and import requests, async callback behavior, and canonical `docs/plans`
+coverage without contacting Mixpanel.
+
 The current focus is:
 
 Priority:
@@ -19,6 +23,7 @@ Priority:
 - Avoid collecting analytics without explicit caller action
 - Maintain `make check` with mocked HTTP coverage
 - Treat `urllib2` and Python 2 idioms as legacy constraints
+- Keep completed maintenance plans under `docs/plans`
 
 Next priorities:
 
