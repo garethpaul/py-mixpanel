@@ -1,5 +1,8 @@
 # py-mixpanel
 
+<!-- README-OVERVIEW-IMAGE -->
+![Project overview](docs/readme-overview.svg)
+
 ## Overview
 
 `garethpaul/py-mixpanel` is a public sample, documentation, or utility project. Track events with mixpanel
@@ -69,4 +72,3 @@ Keep changes small and tied to the project that is already present in this repos
 Prior README summary:
 
 > py-mixpanel <!-- README-OVERVIEW-IMAGE --> py-mixpanel =========== Track events with mixpanel. Non official. USAGE ===== METHOD
-
