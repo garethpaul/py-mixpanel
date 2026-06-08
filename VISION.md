@@ -35,6 +35,11 @@ Contribution rules:
 
 ## Security And Responsible Use
 
+Canonical security policy and reporting:
+
+- [`SECURITY.md`](SECURITY.md)
+
+
 Analytics libraries can leak user identifiers and behavior. This wrapper should
 make tracking explicit, keep credentials out of source control, and avoid
 background event submission that callers did not request.
