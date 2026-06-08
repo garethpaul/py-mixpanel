@@ -27,5 +27,4 @@ network request.
 ## Follow-Up Candidates
 
 - Return or expose request errors instead of discarding response details.
-- Add tests for `track_async` callback behavior.
 - Document Mixpanel API version assumptions and user-consent expectations.

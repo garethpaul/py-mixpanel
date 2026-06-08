@@ -6,3 +6,4 @@
 - Switched Mixpanel track/import endpoints from HTTP to HTTPS.
 - URL-escaped the encoded payload and API key before building Mixpanel request URLs.
 - Added `make verify` for legacy syntax checks and mocked regression tests.
+- Added deterministic `track_async` callback coverage using a fake thread and mocked HTTP request.

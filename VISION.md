@@ -22,7 +22,7 @@ Priority:
 
 Next priorities:
 
-- Add more mock HTTP tests for error handling and async callback behavior
+- Add more mock HTTP tests for error handling
 - Return or expose request errors instead of swallowing response details
 - Document Python version and Mixpanel API assumptions
 - Add guidance for user consent and distinct ID handling

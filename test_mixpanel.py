@@ -1,5 +1,6 @@
 import base64
 import json
+import threading
 import unittest
 import urlparse
 
@@ -9,6 +10,20 @@ import mixpanel
 class FakeResponse(object):
     def read(self):
         return "1"
+
+
+class FakeThread(object):
+    created = []
+
+    def __init__(self, target=None, kwargs=None):
+        self.target = target
+        self.kwargs = kwargs or {}
+        self.started = False
+        FakeThread.created.append(self)
+
+    def start(self):
+        self.started = True
+        self.target(**self.kwargs)
 
 
 class EventTrackerTest(unittest.TestCase):
@@ -65,6 +80,35 @@ class EventTrackerTest(unittest.TestCase):
         self.assertEqual(["api-secret"], query["api_key"])
         self.assertEqual("Imported", payload["event"])
         self.assertEqual("project-token", payload["properties"]["token"])
+
+    def test_track_async_posts_payload_and_runs_callback(self):
+        callbacks = []
+        tracker = mixpanel.EventTracker("project-token")
+        original_thread = threading.Thread
+        FakeThread.created = []
+        threading.Thread = FakeThread
+
+        def callback(event, properties):
+            callbacks.append((event, properties.copy()))
+
+        try:
+            thread = tracker.track_async("Async Event", {"distinct_id": "user-3"}, callback)
+        finally:
+            threading.Thread = original_thread
+
+        self.assertEqual(1, len(FakeThread.created))
+        self.assertEqual(FakeThread.created[0], thread)
+        self.assertTrue(thread.started)
+        self.assertEqual(1, len(self.urls))
+
+        parsed, query, payload = self.payload_from_url(self.urls[0])
+        self.assertEqual("https", parsed.scheme)
+        self.assertEqual("/track/", parsed.path)
+        self.assertIn("data", query)
+        self.assertEqual("Async Event", payload["event"])
+        self.assertEqual("project-token", payload["properties"]["token"])
+        self.assertEqual("user-3", payload["properties"]["distinct_id"])
+        self.assertEqual([("Async Event", payload["properties"])], callbacks)
 
 
 if __name__ == "__main__":

@@ -51,7 +51,7 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 ## Testing and Verification
 
 - Run `make verify` before committing changes.
-- The verification gate compile-checks the legacy Python 2 files and runs mocked HTTP tests for tracking and import URLs.
+- The verification gate compile-checks the legacy Python 2 files and runs mocked HTTP tests for tracking, import URLs, and async callback behavior.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
