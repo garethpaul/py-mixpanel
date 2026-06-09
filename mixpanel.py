@@ -29,6 +29,11 @@ class EventTracker(object):
       raise ValueError("Must specify a token")
 
     token = token.strip()
+    if api_key is not None:
+      if not isinstance(api_key, basestring) or not api_key.strip():
+        raise ValueError("Must specify an API key")
+      api_key = api_key.strip()
+
     self.token = token
     self.api_key = api_key
 

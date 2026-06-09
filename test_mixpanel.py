@@ -101,6 +101,14 @@ class EventTrackerTest(unittest.TestCase):
         tracker = mixpanel.EventTracker(" project-token ")
         self.assertEqual("project-token", tracker.token)
 
+    def test_tracker_requires_nonblank_api_key_when_provided(self):
+        for api_key in ("", " \t\n", 123):
+            with self.assertRaises(ValueError):
+                mixpanel.EventTracker("project-token", api_key=api_key)
+
+        tracker = mixpanel.EventTracker("project-token", api_key=" api-secret ")
+        self.assertEqual("api-secret", tracker.api_key)
+
     def test_track_does_not_mutate_caller_properties(self):
         tracker = mixpanel.EventTracker("project-token")
         properties = {"distinct_id": "user-5", "plan": "free"}

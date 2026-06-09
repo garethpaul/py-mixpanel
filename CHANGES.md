@@ -2,6 +2,8 @@
 
 ## 2026-06-09
 
+- Added `EventTracker` API-key validation so blank import credentials are
+  rejected before request URL construction.
 - Added `EventTracker` token validation so blank project tokens are rejected
   before request construction.
 - Added event-name validation so blank events are rejected before request
