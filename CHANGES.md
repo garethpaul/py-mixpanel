@@ -2,6 +2,8 @@
 
 ## 2026-06-09
 
+- Added `EventTracker` token validation so blank project tokens are rejected
+  before request construction.
 - Copied caller-provided event properties before validation and Mixpanel default
   enrichment so `track` no longer mutates application-owned dictionaries.
 

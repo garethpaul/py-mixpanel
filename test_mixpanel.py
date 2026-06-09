@@ -82,6 +82,14 @@ class EventTrackerTest(unittest.TestCase):
         self.assertEqual([], self.urls)
         self.assertEqual({}, properties)
 
+    def test_tracker_requires_nonblank_token(self):
+        for token in (None, "", " \t\n"):
+            with self.assertRaises(ValueError):
+                mixpanel.EventTracker(token)
+
+        tracker = mixpanel.EventTracker(" project-token ")
+        self.assertEqual("project-token", tracker.token)
+
     def test_track_does_not_mutate_caller_properties(self):
         tracker = mixpanel.EventTracker("project-token")
         properties = {"distinct_id": "user-5", "plan": "free"}

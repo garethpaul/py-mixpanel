@@ -21,6 +21,7 @@ Priority:
 
 - Preserve the `EventTracker.track` and `track_async` API shape
 - Keep token and API-key handling caller-controlled
+- Reject blank Mixpanel project tokens before request construction
 - Avoid collecting analytics without explicit caller action
 - Maintain `make check` with mocked HTTP coverage
 - Reject events without caller-provided `distinct_id` before any request

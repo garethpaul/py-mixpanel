@@ -25,6 +25,10 @@ class EventTracker(object):
     :param token: The auth token to use to validate each request
     :type token: str
     """
+    if not isinstance(token, basestring) or not token.strip():
+      raise ValueError("Must specify a token")
+
+    token = token.strip()
     self.token = token
     self.api_key = api_key
 

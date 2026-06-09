@@ -46,6 +46,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 ## Running or Using the Project
 
 - Import `EventTracker` from `mixpanel.py`.
+- Construct `EventTracker` with a nonblank Mixpanel project token; surrounding
+  whitespace is trimmed and blank tokens raise `ValueError`.
 - Call `track(event, properties)` only after the caller has explicit consent and a caller-provided `distinct_id`.
 - Calls without a `distinct_id` raise `ValueError` before any HTTP request.
 - Caller-provided properties are copied before the tracker adds `token` or
@@ -83,6 +85,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   failure behavior baseline.
 - See `docs/plans/2026-06-09-caller-property-isolation.md` for caller-property
   mutation coverage.
+- See `docs/plans/2026-06-09-token-validation.md` for constructor token
+  validation coverage.
 
 ## Contributing
 
