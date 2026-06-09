@@ -53,7 +53,9 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 - Call `track(event, properties)` only after the caller has explicit consent and a caller-provided `distinct_id`.
 - Event names must be nonblank strings; blank or non-string event names raise
   `ValueError` before any HTTP request.
-- Calls without a `distinct_id` raise `ValueError` before any HTTP request.
+- Event properties must be dictionaries.
+- Calls without a nonblank string `distinct_id` raise `ValueError` before any
+  HTTP request.
 - Caller-provided properties are copied before the tracker adds `token` or
   `time`, so validation and payload enrichment do not mutate application data.
 - Mixpanel HTTP requests use a ten-second timeout by default.
@@ -64,7 +66,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 - Run `make check` before committing changes.
 - `make check` delegates to `make verify`, which compile-checks the legacy Python 2 files, runs mocked HTTP tests for tracking, import URLs, request validation, request timeouts, request-error behavior, caller-property isolation, and async callback behavior, and verifies completed plans under `docs/plans`.
 - Request validation coverage includes nonblank project tokens, API keys when
-  provided, event names, and caller-provided distinct IDs.
+  provided, event names, properties dictionaries, and nonblank caller-provided
+  distinct IDs.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
@@ -82,6 +85,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   encoded or sent.
 - Constructor validation rejects blank API keys before import request URLs are
   built.
+- Tracking validation rejects non-dict properties and blank distinct IDs before
+  analytics payloads are encoded or sent.
 
 ## Maintenance Notes
 
@@ -101,6 +106,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   validation coverage.
 - See `docs/plans/2026-06-09-event-name-validation.md` for event-name
   validation coverage.
+- See `docs/plans/2026-06-09-distinct-id-validation.md` for properties and
+  distinct ID validation coverage.
 
 ## Contributing
 

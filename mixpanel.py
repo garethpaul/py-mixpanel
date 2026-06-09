@@ -55,11 +55,16 @@ class EventTracker(object):
 
     if properties is None:
       properties = {}
+    elif not isinstance(properties, dict):
+      raise ValueError("Properties must be a dict")
     else:
       properties = properties.copy()
 
-    if not properties.has_key("distinct_id"):
+    if (not properties.has_key("distinct_id") or
+        not isinstance(properties["distinct_id"], basestring) or
+        not properties["distinct_id"].strip()):
       raise ValueError("Must specify a distinct ID")
+    properties["distinct_id"] = properties["distinct_id"].strip()
 
     if not properties.has_key("token"):
       properties['token'] = self.token

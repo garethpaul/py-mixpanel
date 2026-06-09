@@ -82,6 +82,24 @@ class EventTrackerTest(unittest.TestCase):
         self.assertEqual([], self.urls)
         self.assertEqual({}, properties)
 
+    def test_track_requires_nonblank_string_distinct_id(self):
+        tracker = mixpanel.EventTracker("project-token")
+
+        for distinct_id in (None, "", " \t\n", 123):
+            with self.assertRaises(ValueError):
+                tracker.track("Missing ID", {"distinct_id": distinct_id})
+
+        self.assertEqual([], self.urls)
+
+    def test_track_requires_properties_dict(self):
+        tracker = mixpanel.EventTracker("project-token")
+
+        for properties in ("distinct_id=user-1", [("distinct_id", "user-1")], 123):
+            with self.assertRaises(ValueError):
+                tracker.track("Bad Properties", properties)
+
+        self.assertEqual([], self.urls)
+
     def test_track_requires_nonblank_event_name(self):
         tracker = mixpanel.EventTracker("project-token")
         properties = {"distinct_id": "user-1"}

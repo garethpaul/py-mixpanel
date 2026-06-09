@@ -8,6 +8,8 @@
   before request construction.
 - Added event-name validation so blank events are rejected before request
   construction.
+- Added properties and distinct ID validation so non-dict properties and blank
+  identifiers are rejected before request construction.
 - Copied caller-provided event properties before validation and Mixpanel default
   enrichment so `track` no longer mutates application-owned dictionaries.
 

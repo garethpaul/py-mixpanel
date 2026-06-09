@@ -24,6 +24,7 @@ Priority:
 - Reject blank Mixpanel project tokens before request construction
 - Reject blank API keys before import request construction
 - Reject blank event names before request construction
+- Reject non-dict properties and blank distinct IDs before request construction
 - Avoid collecting analytics without explicit caller action
 - Maintain `make check` with mocked HTTP coverage
 - Reject events without caller-provided `distinct_id` before any request
