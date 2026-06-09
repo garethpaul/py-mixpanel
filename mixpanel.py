@@ -43,13 +43,16 @@ class EventTracker(object):
     """
     if properties is None:
       properties = {}
+    else:
+      properties = properties.copy()
+
+    if not properties.has_key("distinct_id"):
+      raise ValueError("Must specify a distinct ID")
+
     if not properties.has_key("token"):
       properties['token'] = self.token
     if not properties.has_key("time"):
       properties['time'] = int(time.time())
-
-    if not properties.has_key("distinct_id"):
-      raise ValueError("Must specify a distinct ID")
 
     params = {"event": event, "properties": properties}
     data = urllib.quote(base64.b64encode(json.dumps(params)), safe='')

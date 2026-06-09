@@ -24,6 +24,7 @@ Priority:
 - Avoid collecting analytics without explicit caller action
 - Maintain `make check` with mocked HTTP coverage
 - Reject events without caller-provided `distinct_id` before any request
+- Avoid mutating caller-provided event properties during payload enrichment
 - Keep request failure behavior visible to callers and covered by mocks
 - Keep request timeouts explicit
 - Treat `urllib2` and Python 2 idioms as legacy constraints

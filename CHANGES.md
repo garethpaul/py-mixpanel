@@ -1,5 +1,10 @@
 # Changes
 
+## 2026-06-09
+
+- Copied caller-provided event properties before validation and Mixpanel default
+  enrichment so `track` no longer mutates application-owned dictionaries.
+
 ## 2026-06-08
 
 - Added mocked request-error coverage so failed sends propagate and skip

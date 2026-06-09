@@ -74,11 +74,28 @@ class EventTrackerTest(unittest.TestCase):
 
     def test_track_requires_distinct_id_without_optimized_asserts(self):
         tracker = mixpanel.EventTracker("project-token")
+        properties = {}
 
         with self.assertRaises(ValueError):
-            tracker.track("Missing ID", {})
+            tracker.track("Missing ID", properties)
 
         self.assertEqual([], self.urls)
+        self.assertEqual({}, properties)
+
+    def test_track_does_not_mutate_caller_properties(self):
+        tracker = mixpanel.EventTracker("project-token")
+        properties = {"distinct_id": "user-5", "plan": "free"}
+
+        tracker.track("No Mutation", properties)
+
+        self.assertEqual({"distinct_id": "user-5", "plan": "free"}, properties)
+        parsed, query, payload = self.payload_from_url(self.urls[0])
+        self.assertEqual("https", parsed.scheme)
+        self.assertIn("data", query)
+        self.assertEqual("No Mutation", payload["event"])
+        self.assertEqual("project-token", payload["properties"]["token"])
+        self.assertEqual(1234567890, payload["properties"]["time"])
+        self.assertEqual("free", payload["properties"]["plan"])
 
     def test_track_propagates_request_errors_without_callback(self):
         callbacks = []
