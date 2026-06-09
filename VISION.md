@@ -28,6 +28,7 @@ Priority:
 - Reject non-dict properties and blank distinct IDs before request construction
 - Avoid collecting analytics without explicit caller action
 - Maintain `make check` and `make build` with mocked HTTP coverage
+- Keep a scriptable baseline guard for required files and local metadata
 - Reject events without caller-provided `distinct_id` before any request
 - Avoid mutating caller-provided event properties during payload enrichment
 - Keep request failure behavior visible to callers and covered by mocks

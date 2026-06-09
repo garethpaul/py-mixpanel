@@ -4,6 +4,8 @@
 
 - Added event-name normalization so surrounding whitespace is trimmed before
   payload encoding and callback execution.
+- Added `scripts/check-baseline.sh` and local secret/editor ignore coverage for
+  required files, completed plan metadata, and verification docs.
 - Added a static `make build` gate for the legacy mocked verification flow.
 - Added `EventTracker` API-key validation so blank import credentials are
   rejected before request URL construction.

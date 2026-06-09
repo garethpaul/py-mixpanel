@@ -19,3 +19,4 @@ build: test
 verify: lint test build docs
 
 check: verify
+	scripts/check-baseline.sh

@@ -1,5 +1,11 @@
 *.py[cod]
 
+.env
+.env.*
+.idea/
+.vscode/
+*.iml
+
 # C extensions
 *.so
 
