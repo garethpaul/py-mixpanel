@@ -12,8 +12,8 @@ identity, and Python 2-era assumptions explicit.
 
 Current baseline: `make check` verifies Python 2 syntax, mocked HTTPS tracking
 and import requests, distinct ID validation, request timeout behavior, async
-callback behavior, and completed `docs/plans` coverage without contacting
-Mixpanel.
+callback behavior, the static legacy build gate, and completed `docs/plans`
+coverage without contacting Mixpanel.
 
 The current focus is:
 
@@ -24,9 +24,10 @@ Priority:
 - Reject blank Mixpanel project tokens before request construction
 - Reject blank API keys before import request construction
 - Reject blank event names before request construction
+- Normalize event names before payload construction and callbacks
 - Reject non-dict properties and blank distinct IDs before request construction
 - Avoid collecting analytics without explicit caller action
-- Maintain `make check` with mocked HTTP coverage
+- Maintain `make check` and `make build` with mocked HTTP coverage
 - Reject events without caller-provided `distinct_id` before any request
 - Avoid mutating caller-provided event properties during payload enrichment
 - Keep request failure behavior visible to callers and covered by mocks

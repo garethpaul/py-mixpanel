@@ -52,6 +52,7 @@ class EventTracker(object):
     """
     if not isinstance(event, basestring) or not event.strip():
       raise ValueError("Must specify an event")
+    event = event.strip()
 
     if properties is None:
       properties = {}

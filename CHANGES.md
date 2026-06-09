@@ -2,6 +2,9 @@
 
 ## 2026-06-09
 
+- Added event-name normalization so surrounding whitespace is trimmed before
+  payload encoding and callback execution.
+- Added a static `make build` gate for the legacy mocked verification flow.
 - Added `EventTracker` API-key validation so blank import credentials are
   rejected before request URL construction.
 - Added `EventTracker` token validation so blank project tokens are rejected

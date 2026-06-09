@@ -111,6 +111,22 @@ class EventTrackerTest(unittest.TestCase):
         self.assertEqual([], self.urls)
         self.assertEqual({"distinct_id": "user-1"}, properties)
 
+    def test_track_trims_event_name(self):
+        callbacks = []
+        tracker = mixpanel.EventTracker("project-token")
+
+        tracker.track(
+            " Signed Up ",
+            {"distinct_id": "user-1"},
+            lambda event, properties: callbacks.append((event, properties.copy())),
+        )
+
+        parsed, query, payload = self.payload_from_url(self.urls[0])
+        self.assertEqual("https", parsed.scheme)
+        self.assertIn("data", query)
+        self.assertEqual("Signed Up", payload["event"])
+        self.assertEqual([("Signed Up", payload["properties"])], callbacks)
+
     def test_tracker_requires_nonblank_token(self):
         for token in (None, "", " \t\n"):
             with self.assertRaises(ValueError):

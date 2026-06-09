@@ -39,6 +39,8 @@ For web services, APIs, sockets, or scraping workflows, prioritize reports invol
 Event names, project tokens, event property containers, and caller-provided
 distinct IDs should be validated before any Mixpanel request is built so
 malformed analytics payloads do not leave the process.
+Event names should be normalized before payload construction so caller typos do
+not create visually duplicated analytics events.
 
 Event property dictionaries can contain user identifiers and behavior data. The tracker copies caller-provided properties before adding Mixpanel defaults so application-owned data is not mutated during validation or submission.
 

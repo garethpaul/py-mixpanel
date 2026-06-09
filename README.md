@@ -53,6 +53,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 - Call `track(event, properties)` only after the caller has explicit consent and a caller-provided `distinct_id`.
 - Event names must be nonblank strings; blank or non-string event names raise
   `ValueError` before any HTTP request.
+- Surrounding whitespace is trimmed from event names before payload encoding
+  and callback execution.
 - Event properties must be dictionaries.
 - Calls without a nonblank string `distinct_id` raise `ValueError` before any
   HTTP request.
@@ -64,6 +66,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 ## Testing and Verification
 
 - Run `make check` before committing changes.
+- Run `make build` for the static legacy verification gate; it uses the same
+  mocked Python 2 tests as `make test`.
 - `make check` delegates to `make verify`, which compile-checks the legacy Python 2 files, runs mocked HTTP tests for tracking, import URLs, request validation, request timeouts, request-error behavior, caller-property isolation, and async callback behavior, and verifies completed plans under `docs/plans`.
 - Request validation coverage includes nonblank project tokens, API keys when
   provided, event names, properties dictionaries, and nonblank caller-provided
@@ -83,6 +87,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - Review changes touching file, media, JSON, XML, CSV, OCR, or data parsing; examples from the scan include mixpanel.py.
 - Event validation rejects blank event names before analytics payloads are
   encoded or sent.
+- Event validation trims surrounding whitespace before analytics payloads are
+  encoded or callbacks run.
 - Constructor validation rejects blank API keys before import request URLs are
   built.
 - Tracking validation rejects non-dict properties and blank distinct IDs before
@@ -106,6 +112,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   validation coverage.
 - See `docs/plans/2026-06-09-event-name-validation.md` for event-name
   validation coverage.
+- See `docs/plans/2026-06-09-event-name-normalization.md` for event-name
+  normalization coverage and the static `make build` alias.
 - See `docs/plans/2026-06-09-distinct-id-validation.md` for properties and
   distinct ID validation coverage.
 
