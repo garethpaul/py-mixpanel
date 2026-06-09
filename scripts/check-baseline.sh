@@ -49,12 +49,18 @@ for documented in "Python 2.7" "make check" "make build" "scripts/check-baseline
   fi
 done
 
-for ignored in "*.py[cod]" "dist" "build" ".env" ".env.*" ".idea/" ".vscode/" "*.iml"; do
+for ignored in "*.py[cod]" "__pycache__/" "dist" "build" ".env" ".env.*" ".idea/" ".vscode/" "*.iml"; do
   if ! grep -Fq "$ignored" "$GITIGNORE"; then
     printf '%s\n' ".gitignore must include $ignored" >&2
     exit 1
   fi
 done
+
+bytecode_artifacts=$(find "$ROOT_DIR" -path "$ROOT_DIR/.git" -prune -o \( -name '*.pyc' -o -name '__pycache__' \) -print)
+if [ -n "$bytecode_artifacts" ]; then
+  printf '%s\n%s\n' "Python bytecode artifacts must not be kept in the repository tree:" "$bytecode_artifacts" >&2
+  exit 1
+fi
 
 tracked_local=$(git -C "$ROOT_DIR" ls-files '.env' '.env.*' '.idea' '.vscode' '*.iml' || true)
 if [ -n "$tracked_local" ]; then

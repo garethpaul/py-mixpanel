@@ -2,6 +2,7 @@
 
 ## 2026-06-09
 
+- Added bytecode-free verification coverage for the legacy Python 2 tests.
 - Added event-name normalization so surrounding whitespace is trimmed before
   payload encoding and callback execution.
 - Added `scripts/check-baseline.sh` and local secret/editor ignore coverage for

@@ -34,6 +34,7 @@ Priority:
 - Keep request failure behavior visible to callers and covered by mocks
 - Keep request timeouts explicit
 - Treat `urllib2` and Python 2 idioms as legacy constraints
+- Keep legacy verification from leaving Python bytecode in the repository tree
 - Keep completed maintenance plans under `docs/plans`
 
 Next priorities:

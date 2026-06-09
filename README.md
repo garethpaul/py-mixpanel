@@ -73,6 +73,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 - `make check` delegates to `make verify`, which compile-checks the legacy Python 2 files, runs mocked HTTP tests for tracking, import URLs, request validation, request timeouts, request-error behavior, caller-property isolation, and async callback behavior, and verifies completed plans under `docs/plans`.
 - The baseline script checks required files, completed docs-plan metadata,
   verification documentation, and local secret/editor metadata hygiene.
+- The baseline script also rejects local `.pyc` files and `__pycache__`
+  directories after the mocked Python 2 tests run.
 - Request validation coverage includes nonblank project tokens, API keys when
   provided, event names, properties dictionaries, and nonblank caller-provided
   distinct IDs.
@@ -122,6 +124,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   distinct ID validation coverage.
 - See `docs/plans/2026-06-09-scripted-baseline-check.md` for the scripted
   repository baseline guard and local secret/editor metadata ignores.
+- See `docs/plans/2026-06-09-bytecode-free-verification.md` for the
+  bytecode-free legacy verification guard.
 
 ## Contributing
 

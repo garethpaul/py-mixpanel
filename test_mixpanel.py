@@ -1,8 +1,11 @@
 import base64
 import json
+import sys
 import threading
 import unittest
 import urlparse
+
+sys.dont_write_bytecode = True
 
 import mixpanel
 
