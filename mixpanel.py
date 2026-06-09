@@ -45,6 +45,9 @@ class EventTracker(object):
       This is mostly used for handling Async operations
     :type callback: function
     """
+    if not isinstance(event, basestring) or not event.strip():
+      raise ValueError("Must specify an event")
+
     if properties is None:
       properties = {}
     else:

@@ -36,6 +36,10 @@ Helpful reports include:
 
 For web services, APIs, sockets, or scraping workflows, prioritize reports involving authentication bypass, authorization errors, injection, server-side request forgery, unsafe deserialization, credential leakage, data exposure, or denial-of-service conditions. Use test accounts and minimal proof-of-concept traffic only.
 
+Event names, project tokens, and caller-provided distinct IDs should be
+validated before any Mixpanel request is built so malformed analytics payloads
+do not leave the process.
+
 Event property dictionaries can contain user identifiers and behavior data. The tracker copies caller-provided properties before adding Mixpanel defaults so application-owned data is not mutated during validation or submission.
 
 ## Dependency and Supply Chain Security

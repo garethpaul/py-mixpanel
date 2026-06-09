@@ -49,6 +49,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 - Construct `EventTracker` with a nonblank Mixpanel project token; surrounding
   whitespace is trimmed and blank tokens raise `ValueError`.
 - Call `track(event, properties)` only after the caller has explicit consent and a caller-provided `distinct_id`.
+- Event names must be nonblank strings; blank or non-string event names raise
+  `ValueError` before any HTTP request.
 - Calls without a `distinct_id` raise `ValueError` before any HTTP request.
 - Caller-provided properties are copied before the tracker adds `token` or
   `time`, so validation and payload enrichment do not mutate application data.
@@ -59,6 +61,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 
 - Run `make check` before committing changes.
 - `make check` delegates to `make verify`, which compile-checks the legacy Python 2 files, runs mocked HTTP tests for tracking, import URLs, request validation, request timeouts, request-error behavior, caller-property isolation, and async callback behavior, and verifies completed plans under `docs/plans`.
+- Request validation coverage includes nonblank project tokens, event names,
+  and caller-provided distinct IDs.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
@@ -72,6 +76,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - Review changes touching external API calls or credential-adjacent configuration; examples from the scan include mixpanel.py.
 - Review changes touching network requests, sockets, or service endpoints; examples from the scan include mixpanel.py.
 - Review changes touching file, media, JSON, XML, CSV, OCR, or data parsing; examples from the scan include mixpanel.py.
+- Event validation rejects blank event names before analytics payloads are
+  encoded or sent.
 
 ## Maintenance Notes
 
@@ -86,6 +92,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - See `docs/plans/2026-06-09-caller-property-isolation.md` for caller-property
   mutation coverage.
 - See `docs/plans/2026-06-09-token-validation.md` for constructor token
+  validation coverage.
+- See `docs/plans/2026-06-09-event-name-validation.md` for event-name
   validation coverage.
 
 ## Contributing
