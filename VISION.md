@@ -31,6 +31,7 @@ Priority:
 - Keep a scriptable baseline guard for required files and local metadata
 - Reject events without caller-provided `distinct_id` before any request
 - Avoid mutating caller-provided event properties during payload enrichment
+- Reject invalid callbacks before requests or async worker threads start
 - Keep request failure behavior visible to callers and covered by mocks
 - Keep request timeouts explicit
 - Treat `urllib2` and Python 2 idioms as legacy constraints

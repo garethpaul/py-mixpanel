@@ -114,6 +114,16 @@ class EventTrackerTest(unittest.TestCase):
         self.assertEqual([], self.urls)
         self.assertEqual({"distinct_id": "user-1"}, properties)
 
+    def test_track_requires_callable_callback_before_request(self):
+        tracker = mixpanel.EventTracker("project-token")
+        properties = {"distinct_id": "user-1"}
+
+        with self.assertRaises(ValueError):
+            tracker.track("Bad Callback", properties, callback="not-callable")
+
+        self.assertEqual([], self.urls)
+        self.assertEqual({"distinct_id": "user-1"}, properties)
+
     def test_track_trims_event_name(self):
         callbacks = []
         tracker = mixpanel.EventTracker("project-token")
@@ -225,6 +235,25 @@ class EventTrackerTest(unittest.TestCase):
         self.assertEqual("user-3", payload["properties"]["distinct_id"])
         self.assertEqual([mixpanel.REQUEST_TIMEOUT_SECONDS], self.timeouts)
         self.assertEqual([("Async Event", payload["properties"])], callbacks)
+
+    def test_track_async_requires_callable_callback_before_thread(self):
+        tracker = mixpanel.EventTracker("project-token")
+        original_thread = threading.Thread
+        FakeThread.created = []
+        threading.Thread = FakeThread
+
+        try:
+            with self.assertRaises(ValueError):
+                tracker.track_async(
+                    "Async Event",
+                    {"distinct_id": "user-3"},
+                    callback="not-callable",
+                )
+        finally:
+            threading.Thread = original_thread
+
+        self.assertEqual([], FakeThread.created)
+        self.assertEqual([], self.urls)
 
 
 if __name__ == "__main__":

@@ -1,5 +1,10 @@
 # Changes
 
+## 2026-06-10
+
+- Added callback validation so non-callable callbacks fail before HTTP
+  requests or async worker threads start.
+
 ## 2026-06-09
 
 - Added bytecode-free verification coverage for the legacy Python 2 tests.

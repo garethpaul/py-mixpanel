@@ -15,6 +15,11 @@ def open_mixpanel_url(url):
   return urllib2.urlopen(url, timeout=REQUEST_TIMEOUT_SECONDS)
 
 
+def validate_callback(callback):
+  if callback is not None and not callable(callback):
+    raise ValueError("Callback must be callable")
+
+
 class EventTracker(object):
   """Simple Event Tracker
   Designed to be generic, but currently uses Mixpanel
@@ -53,6 +58,7 @@ class EventTracker(object):
     if not isinstance(event, basestring) or not event.strip():
       raise ValueError("Must specify an event")
     event = event.strip()
+    validate_callback(callback)
 
     if properties is None:
       properties = {}
@@ -98,6 +104,8 @@ class EventTracker(object):
     :return: Thread object that will process this request
     :rtype: :class:`threading.Thread`
     """
+    validate_callback(callback)
+
     from threading import Thread
     t = Thread(target=self.track, kwargs={
       'event': event, 

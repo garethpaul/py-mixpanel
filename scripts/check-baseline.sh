@@ -49,6 +49,11 @@ for documented in "Python 2.7" "make check" "make build" "scripts/check-baseline
   fi
 done
 
+if ! grep -Fq "callable(callback)" "$ROOT_DIR/mixpanel.py"; then
+  printf '%s\n' "mixpanel.py must validate callbacks before request or thread creation." >&2
+  exit 1
+fi
+
 for ignored in "*.py[cod]" "__pycache__/" "dist" "build" ".env" ".env.*" ".idea/" ".vscode/" "*.iml"; do
   if ! grep -Fq "$ignored" "$GITIGNORE"; then
     printf '%s\n' ".gitignore must include $ignored" >&2

@@ -63,6 +63,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   `time`, so validation and payload enrichment do not mutate application data.
 - Mixpanel HTTP requests use a ten-second timeout by default.
 - Use `track_async` only when background submission is expected by the caller.
+- Callbacks must be callable when provided; invalid callbacks raise
+  `ValueError` before HTTP requests or async worker threads are started.
 
 ## Testing and Verification
 
@@ -99,6 +101,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   built.
 - Tracking validation rejects non-dict properties and blank distinct IDs before
   analytics payloads are encoded or sent.
+- Callback validation rejects non-callable callbacks before analytics payloads
+  are sent or async worker threads are started.
 
 ## Maintenance Notes
 
@@ -126,6 +130,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   repository baseline guard and local secret/editor metadata ignores.
 - See `docs/plans/2026-06-09-bytecode-free-verification.md` for the
   bytecode-free legacy verification guard.
+- See `docs/plans/2026-06-10-callback-validation.md` for the callback
+  validation guard.
 
 ## Contributing
 
