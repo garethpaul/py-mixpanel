@@ -6,6 +6,7 @@ README="$ROOT_DIR/README.md"
 MAKEFILE="$ROOT_DIR/Makefile"
 GITIGNORE="$ROOT_DIR/.gitignore"
 DOCS_PLANS="$ROOT_DIR/docs/plans"
+WORKFLOW="$ROOT_DIR/.github/workflows/check.yml"
 
 require_file() {
   path=$1
@@ -26,9 +27,46 @@ for path in \
   "test_mixpanel.py" \
   "docs/plans/2026-06-08-py-mixpanel-baseline.md" \
   "docs/plans/2026-06-09-scripted-baseline-check.md" \
+  "docs/plans/2026-06-10-hosted-legacy-validation.md" \
+  ".github/workflows/check.yml" \
   "scripts/check-baseline.sh"; do
   require_file "$path"
 done
+
+if ! grep -Fxq 'permissions:' "$WORKFLOW" || ! grep -Fxq '  contents: read' "$WORKFLOW"; then
+  printf '%s\n' "Hosted validation must use read-only repository contents permission." >&2
+  exit 1
+fi
+
+if ! grep -Fq 'actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10' "$WORKFLOW"; then
+  printf '%s\n' "Hosted validation must pin the reviewed actions/checkout v6.0.3 commit." >&2
+  exit 1
+fi
+
+if ! grep -Fq 'python:2.7.18@sha256:c934af72b8bd03b9804d5bde2569c320926e70392d708d113a2e71bcf98c8a20' "$WORKFLOW"; then
+  printf '%s\n' "Hosted validation must pin the reviewed Python 2.7.18 image digest." >&2
+  exit 1
+fi
+
+if grep -Fq 'setup-python@' "$WORKFLOW"; then
+  printf '%s\n' "Hosted validation must use the pinned Python 2 container, not setup-python." >&2
+  exit 1
+fi
+
+if grep -Fq 'continue-on-error' "$WORKFLOW"; then
+  printf '%s\n' "Hosted validation must not allow legacy verification failures." >&2
+  exit 1
+fi
+
+if ! grep -Eq '^[[:space:]]+run: make check$' "$WORKFLOW"; then
+  printf '%s\n' "Hosted validation must run the canonical make check gate." >&2
+  exit 1
+fi
+
+if grep -Fq 'command -v python2' "$MAKEFILE" || grep -Fq 'Skipping legacy Python 2' "$MAKEFILE"; then
+  printf '%s\n' "Makefile must require Python 2 checks instead of skipping them." >&2
+  exit 1
+fi
 
 if ! grep -Fq "scripts/check-baseline.sh" "$MAKEFILE"; then
   printf '%s\n' "Makefile must run scripts/check-baseline.sh from make check." >&2
@@ -67,7 +105,10 @@ if [ -n "$bytecode_artifacts" ]; then
   exit 1
 fi
 
-tracked_local=$(git -C "$ROOT_DIR" ls-files '.env' '.env.*' '.idea' '.vscode' '*.iml' || true)
+if ! tracked_local=$(git -C "$ROOT_DIR" ls-files '.env' '.env.*' '.idea' '.vscode' '*.iml'); then
+  printf '%s\n' "Unable to inspect tracked local secret or editor metadata." >&2
+  exit 1
+fi
 if [ -n "$tracked_local" ]; then
   printf '%s\n%s\n' "Local secrets or editor metadata must not be tracked:" "$tracked_local" >&2
   exit 1

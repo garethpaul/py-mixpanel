@@ -36,6 +36,9 @@ Priority:
 - Keep request timeouts explicit
 - Treat `urllib2` and Python 2 idioms as legacy constraints
 - Keep legacy verification from leaving Python bytecode in the repository tree
+- Run the complete legacy gate in digest-pinned hosted Python 2.7 without
+  skipping mocked request or callback coverage
+- Fail closed when tracked secret or editor metadata cannot be inspected
 - Keep completed maintenance plans under `docs/plans`
 
 Next priorities:

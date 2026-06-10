@@ -12,6 +12,7 @@ This README is based on the checked-in source, manifests, scripts, and repositor
 ## Repository Contents
 
 - `README.md` - project overview and local usage notes
+- `.github/workflows/check.yml` - pinned Python 2.7 hosted verification
 - `CHANGES.md` - notable maintenance changes
 - `Makefile` - local verification entry points
 - `docs/plans` - canonical completed maintenance plans
@@ -80,6 +81,9 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 - Request validation coverage includes nonblank project tokens, API keys when
   provided, event names, properties dictionaries, and nonblank caller-provided
   distinct IDs.
+- GitHub Actions runs the complete gate in the official Python 2.7.18 image,
+  pinned by digest, with read-only repository permissions. The baseline fails
+  if Git cannot inspect tracked secret or editor metadata.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
@@ -132,6 +136,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   bytecode-free legacy verification guard.
 - See `docs/plans/2026-06-10-callback-validation.md` for the callback
   validation guard.
+- See `docs/plans/2026-06-10-hosted-legacy-validation.md` for digest-pinned,
+  full Python 2.7 hosted verification and fail-closed metadata checks.
 
 ## Contributing
 

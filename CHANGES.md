@@ -2,6 +2,10 @@
 
 ## 2026-06-10
 
+- Added read-only hosted verification in a digest-pinned Python 2.7.18
+  container without skipping legacy tests.
+- Made tracked local metadata inspection fail closed when Git cannot inspect
+  the checkout.
 - Added callback validation so non-callable callbacks fail before HTTP
   requests or async worker threads start.
 
