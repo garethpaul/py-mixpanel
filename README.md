@@ -63,6 +63,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 - Caller-provided properties are copied before the tracker adds `token` or
   `time`, so validation and payload enrichment do not mutate application data.
 - Mixpanel HTTP requests use a ten-second timeout by default.
+- Opened Mixpanel HTTP responses are closed after reads succeed or fail so
+  repeated tracking does not leak network resources.
 - Use `track_async` only when background submission is expected by the caller.
 - Callbacks must be callable when provided; invalid callbacks raise
   `ValueError` before HTTP requests or async worker threads are started.
@@ -138,6 +140,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   validation guard.
 - See `docs/plans/2026-06-10-hosted-legacy-validation.md` for digest-pinned,
   full Python 2.7 hosted verification and fail-closed metadata checks.
+- See `docs/plans/2026-06-10-response-close-guard.md` for deterministic HTTP
+  response cleanup on successful and failed reads.
 
 ## Contributing
 

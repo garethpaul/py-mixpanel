@@ -84,7 +84,10 @@ class EventTracker(object):
       resp = open_mixpanel_url(ARCHIVE_BASE_URL % (data, urllib.quote(self.api_key, safe='')))
     else:
       resp = open_mixpanel_url(TRACK_BASE_URL % data)
-    resp.read()
+    try:
+      resp.read()
+    finally:
+      resp.close()
 
     if callback is not None:
       callback(event, properties)

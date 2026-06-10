@@ -92,6 +92,11 @@ if ! grep -Fq "callable(callback)" "$ROOT_DIR/mixpanel.py"; then
   exit 1
 fi
 
+if ! grep -Fq "finally:" "$ROOT_DIR/mixpanel.py" || ! grep -Fq "resp.close()" "$ROOT_DIR/mixpanel.py"; then
+  printf '%s\n' "mixpanel.py must close opened HTTP responses on every read path." >&2
+  exit 1
+fi
+
 for ignored in "*.py[cod]" "__pycache__/" "dist" "build" ".env" ".env.*" ".idea/" ".vscode/" "*.iml"; do
   if ! grep -Fq "$ignored" "$GITIGNORE"; then
     printf '%s\n' ".gitignore must include $ignored" >&2

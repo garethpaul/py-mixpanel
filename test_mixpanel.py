@@ -11,8 +11,17 @@ import mixpanel
 
 
 class FakeResponse(object):
+    def __init__(self, read_error=None):
+        self.read_error = read_error
+        self.closed = False
+
     def read(self):
+        if self.read_error is not None:
+            raise self.read_error
         return "1"
+
+    def close(self):
+        self.closed = True
 
 
 class FakeThread(object):
@@ -33,6 +42,8 @@ class EventTrackerTest(unittest.TestCase):
     def setUp(self):
         self.urls = []
         self.timeouts = []
+        self.responses = []
+        self.response_read_error = None
         self.original_urlopen = mixpanel.urllib2.urlopen
         self.original_time = mixpanel.time.time
         mixpanel.urllib2.urlopen = self.urlopen
@@ -45,7 +56,9 @@ class EventTrackerTest(unittest.TestCase):
     def urlopen(self, url, timeout=None):
         self.urls.append(url)
         self.timeouts.append(timeout)
-        return FakeResponse()
+        response = FakeResponse(self.response_read_error)
+        self.responses.append(response)
+        return response
 
     def payload_from_url(self, url):
         parsed = urlparse.urlparse(url)
@@ -74,6 +87,23 @@ class EventTrackerTest(unittest.TestCase):
         self.assertEqual(1234567890, payload["properties"]["time"])
         self.assertEqual([mixpanel.REQUEST_TIMEOUT_SECONDS], self.timeouts)
         self.assertEqual([("Signed Up", payload["properties"])], callbacks)
+        self.assertTrue(self.responses[0].closed)
+
+    def test_track_closes_response_when_read_fails(self):
+        callbacks = []
+        self.response_read_error = IOError("response read failed")
+        tracker = mixpanel.EventTracker("project-token")
+
+        with self.assertRaises(IOError):
+            tracker.track(
+                "Signed Up",
+                {"distinct_id": "user-1"},
+                lambda event, properties: callbacks.append((event, properties)),
+            )
+
+        self.assertEqual([], callbacks)
+        self.assertEqual(1, len(self.responses))
+        self.assertTrue(self.responses[0].closed)
 
     def test_track_requires_distinct_id_without_optimized_asserts(self):
         tracker = mixpanel.EventTracker("project-token")

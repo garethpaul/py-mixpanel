@@ -48,6 +48,9 @@ Callbacks should be callable before submission starts. Invalid callbacks are
 rejected before analytics payloads are sent or async worker threads are
 started.
 
+Opened Mixpanel HTTP responses should be closed after successful and failed
+reads so repeated analytics submission cannot exhaust local network resources.
+
 Hosted verification runs the full mocked request and callback gate in a
 digest-pinned Python 2.7.18 container with read-only repository permissions.
 Tracked-secret inspection fails closed if Git cannot inspect the checkout.

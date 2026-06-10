@@ -8,6 +8,8 @@
   the checkout.
 - Added callback validation so non-callable callbacks fail before HTTP
   requests or async worker threads start.
+- Closed Mixpanel HTTP responses after successful and failed reads to prevent
+  repeated tracking from leaking network resources.
 
 ## 2026-06-09
 
