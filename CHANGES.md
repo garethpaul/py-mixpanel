@@ -2,6 +2,8 @@
 
 ## 2026-06-12
 
+- Added synchronous async-input preflight so invalid events, properties, and
+  distinct IDs fail before worker creation.
 - Added bounded response reads with a 1 KiB limit plus one overflow probe.
 - Rejected oversized upstream bodies before acknowledgement validation or
   callbacks without exposing response content in errors.

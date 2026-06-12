@@ -71,6 +71,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 - Use `track_async` only when background submission is expected by the caller.
 - Callbacks must be callable when provided; invalid callbacks raise
   `ValueError` before HTTP requests or async worker threads are started.
+- Invalid async event names, property containers, and distinct IDs raise
+  `ValueError` before a worker thread is constructed or a request is opened.
 
 ## Testing and Verification
 

@@ -131,6 +131,22 @@ if ! grep -Fq "callable(callback)" "$ROOT_DIR/mixpanel.py"; then
   exit 1
 fi
 
+if [ "$(grep -Fc 'event = validate_event(event)' "$ROOT_DIR/mixpanel.py")" -ne 2 ] || \
+   [ "$(grep -Fc 'properties = prepare_properties(properties)' "$ROOT_DIR/mixpanel.py")" -ne 2 ]; then
+  printf '%s\n' "track and track_async must share event and property preflight validation." >&2
+  exit 1
+fi
+
+for async_contract in \
+  "test_track_async_rejects_invalid_inputs_before_thread" \
+  "self.assertEqual([], FakeThread.created)" \
+  "self.assertEqual([], self.urls)"; do
+  if ! grep -Fq "$async_contract" "$ROOT_DIR/test_mixpanel.py"; then
+    printf '%s\n' "Async input preflight tests must preserve $async_contract." >&2
+    exit 1
+  fi
+done
+
 if ! grep -Fq "class MixpanelError" "$ROOT_DIR/mixpanel.py" || \
    ! grep -Fq "validate_mixpanel_response(response_body)" "$ROOT_DIR/mixpanel.py" || \
    ! grep -Fq 'response_body.strip() != "1"' "$ROOT_DIR/mixpanel.py"; then

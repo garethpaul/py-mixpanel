@@ -352,6 +352,31 @@ class EventTrackerTest(unittest.TestCase):
         self.assertEqual([], FakeThread.created)
         self.assertEqual([], self.urls)
 
+    def test_track_async_rejects_invalid_inputs_before_thread(self):
+        tracker = mixpanel.EventTracker("project-token")
+        original_thread = threading.Thread
+        FakeThread.created = []
+        threading.Thread = FakeThread
+
+        invalid_calls = [
+            (None, {"distinct_id": "user-3"}),
+            ("", {"distinct_id": "user-3"}),
+            ("Async Event", None),
+            ("Async Event", "distinct_id=user-3"),
+            ("Async Event", {}),
+            ("Async Event", {"distinct_id": None}),
+            ("Async Event", {"distinct_id": " \t\n"}),
+        ]
+        try:
+            for event, properties in invalid_calls:
+                with self.assertRaises(ValueError):
+                    tracker.track_async(event, properties)
+        finally:
+            threading.Thread = original_thread
+
+        self.assertEqual([], FakeThread.created)
+        self.assertEqual([], self.urls)
+
 
 if __name__ == "__main__":
     unittest.main()

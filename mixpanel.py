@@ -25,6 +25,28 @@ def validate_callback(callback):
     raise ValueError("Callback must be callable")
 
 
+def validate_event(event):
+  if not isinstance(event, basestring) or not event.strip():
+    raise ValueError("Must specify an event")
+  return event.strip()
+
+
+def prepare_properties(properties):
+  if properties is None:
+    properties = {}
+  elif not isinstance(properties, dict):
+    raise ValueError("Properties must be a dict")
+  else:
+    properties = properties.copy()
+
+  if (not properties.has_key("distinct_id") or
+      not isinstance(properties["distinct_id"], basestring) or
+      not properties["distinct_id"].strip()):
+    raise ValueError("Must specify a distinct ID")
+  properties["distinct_id"] = properties["distinct_id"].strip()
+  return properties
+
+
 def validate_mixpanel_response(response_body):
   if not isinstance(response_body, basestring) or response_body.strip() != "1":
     raise MixpanelError("Mixpanel rejected the event")
@@ -73,23 +95,9 @@ class EventTracker(object):
       This is mostly used for handling Async operations
     :type callback: function
     """
-    if not isinstance(event, basestring) or not event.strip():
-      raise ValueError("Must specify an event")
-    event = event.strip()
+    event = validate_event(event)
     validate_callback(callback)
-
-    if properties is None:
-      properties = {}
-    elif not isinstance(properties, dict):
-      raise ValueError("Properties must be a dict")
-    else:
-      properties = properties.copy()
-
-    if (not properties.has_key("distinct_id") or
-        not isinstance(properties["distinct_id"], basestring) or
-        not properties["distinct_id"].strip()):
-      raise ValueError("Must specify a distinct ID")
-    properties["distinct_id"] = properties["distinct_id"].strip()
+    properties = prepare_properties(properties)
 
     if not properties.has_key("token"):
       properties['token'] = self.token
@@ -126,7 +134,9 @@ class EventTracker(object):
     :return: Thread object that will process this request
     :rtype: :class:`threading.Thread`
     """
+    event = validate_event(event)
     validate_callback(callback)
+    properties = prepare_properties(properties)
 
     from threading import Thread
     t = Thread(target=self.track, kwargs={
