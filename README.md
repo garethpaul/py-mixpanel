@@ -12,6 +12,7 @@ This README is based on the checked-in source, manifests, scripts, and repositor
 ## Repository Contents
 
 - `README.md` - project overview and local usage notes
+- `.github/workflows/check.yml` - GitHub Actions baseline for `make check`
 - `CHANGES.md` - notable maintenance changes
 - `Makefile` - local verification entry points
 - `docs/plans` - canonical completed maintenance plans
@@ -70,6 +71,9 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 - Run `make build` for the static legacy verification gate; it uses the same
   mocked Python 2 tests as `make test`.
 - Run `scripts/check-baseline.sh` for the SDK-free repository baseline guard.
+- GitHub Actions runs `make check` on pushes and pull requests with Python
+  3.12. Python 2 syntax and mocked HTTP tests run when `python2` is installed
+  and report clear skips otherwise.
 - `make check` delegates to `make verify`, which compile-checks the legacy Python 2 files, runs mocked HTTP tests for tracking, import URLs, request validation, request timeouts, request-error behavior, caller-property isolation, and async callback behavior, and verifies completed plans under `docs/plans`.
 - The baseline script checks required files, completed docs-plan metadata,
   verification documentation, and local secret/editor metadata hygiene.
@@ -126,6 +130,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   repository baseline guard and local secret/editor metadata ignores.
 - See `docs/plans/2026-06-09-bytecode-free-verification.md` for the
   bytecode-free legacy verification guard.
+- See `docs/plans/2026-06-10-ci-baseline.md` for the lightweight GitHub
+  Actions baseline.
 
 ## Contributing
 

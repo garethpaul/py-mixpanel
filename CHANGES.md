@@ -1,5 +1,14 @@
 # Changes
 
+## 2026-06-10
+
+- Added a lightweight GitHub Actions workflow that runs `make check` for the
+  legacy Mixpanel tracking baseline.
+- Guarded Python 2 syntax and mocked HTTP tests so hosted CI can run the static
+  baseline when Python 2 is unavailable.
+- Extended the scripted baseline to require the CI workflow and completed CI
+  plan.
+
 ## 2026-06-09
 
 - Added bytecode-free verification coverage for the legacy Python 2 tests.

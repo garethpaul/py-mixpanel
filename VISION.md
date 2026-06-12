@@ -36,6 +36,7 @@ Priority:
 - Treat `urllib2` and Python 2 idioms as legacy constraints
 - Keep legacy verification from leaving Python bytecode in the repository tree
 - Keep completed maintenance plans under `docs/plans`
+- Keep the static `make check` baseline running in GitHub Actions
 
 Next priorities:
 
