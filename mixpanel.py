@@ -4,6 +4,7 @@ Event tracking - basic for mixpanel
 TRACK_BASE_URL = "https://api.mixpanel.com/track/?data=%s"
 ARCHIVE_BASE_URL = "https://api.mixpanel.com/import/?data=%s&api_key=%s"
 REQUEST_TIMEOUT_SECONDS = 10
+MAX_RESPONSE_BODY_BYTES = 1024
 import urllib2
 import urllib
 import json
@@ -27,6 +28,14 @@ def validate_callback(callback):
 def validate_mixpanel_response(response_body):
   if not isinstance(response_body, basestring) or response_body.strip() != "1":
     raise MixpanelError("Mixpanel rejected the event")
+
+
+def read_mixpanel_response(resp):
+  response_body = resp.read(MAX_RESPONSE_BODY_BYTES + 1)
+  if (isinstance(response_body, basestring) and
+      len(response_body) > MAX_RESPONSE_BODY_BYTES):
+    raise MixpanelError("Mixpanel response exceeds 1024 bytes")
+  return response_body
 
 
 class EventTracker(object):
@@ -94,7 +103,7 @@ class EventTracker(object):
     else:
       resp = open_mixpanel_url(TRACK_BASE_URL % data)
     try:
-      response_body = resp.read()
+      response_body = read_mixpanel_response(resp)
     finally:
       resp.close()
     validate_mixpanel_response(response_body)

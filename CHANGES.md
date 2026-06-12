@@ -2,6 +2,9 @@
 
 ## 2026-06-12
 
+- Added bounded response reads with a 1 KiB limit plus one overflow probe.
+- Rejected oversized upstream bodies before acknowledgement validation or
+  callbacks without exposing response content in errors.
 - Added strict validation for Mixpanel's plain-text success acknowledgement.
 - Rejected failed, empty, whitespace-only, and unexpected response bodies with
   a stable `MixpanelError` before invoking success callbacks.

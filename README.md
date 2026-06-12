@@ -78,7 +78,7 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 - Run `make build` for the static legacy verification gate; it uses the same
   mocked Python 2 tests as `make test`.
 - Run `scripts/check-baseline.sh` for the SDK-free repository baseline guard.
-- `make check` delegates to `make verify`, which compile-checks the legacy Python 2 files, runs mocked HTTP tests for tracking, import URLs, request validation, request timeouts, request-error behavior, caller-property isolation, and async callback behavior, and verifies completed plans under `docs/plans`.
+- `make check` delegates to `make verify`, which compile-checks the legacy Python 2 files, runs mocked HTTP tests for tracking, import URLs, request validation, request timeouts, request-error behavior, bounded response reads, caller-property isolation, and async callback behavior, and verifies completed plans under `docs/plans`.
 - The baseline script checks required files, completed docs-plan metadata,
   verification documentation, and local secret/editor metadata hygiene.
 - The baseline script also rejects local `.pyc` files and `__pycache__`
@@ -150,6 +150,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   response cleanup on successful and failed reads.
 - See `docs/plans/2026-06-12-response-acknowledgement-validation.md` for strict
   Mixpanel acceptance checks before callbacks.
+- See `docs/plans/2026-06-12-response-body-size-boundary.md` for bounded
+  response reads before acknowledgement validation.
 
 ## Contributing
 

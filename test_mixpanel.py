@@ -15,10 +15,14 @@ class FakeResponse(object):
         self.response_body = response_body
         self.read_error = read_error
         self.closed = False
+        self.read_sizes = []
 
-    def read(self):
+    def read(self, size=None):
+        self.read_sizes.append(size)
         if self.read_error is not None:
             raise self.read_error
+        if size is not None and isinstance(self.response_body, basestring):
+            return self.response_body[:size]
         return self.response_body
 
     def close(self):
@@ -90,6 +94,10 @@ class EventTrackerTest(unittest.TestCase):
         self.assertEqual([mixpanel.REQUEST_TIMEOUT_SECONDS], self.timeouts)
         self.assertEqual([("Signed Up", payload["properties"])], callbacks)
         self.assertTrue(self.responses[0].closed)
+        self.assertEqual(
+            [mixpanel.MAX_RESPONSE_BODY_BYTES + 1],
+            self.responses[0].read_sizes,
+        )
 
     def test_track_closes_response_when_read_fails(self):
         callbacks = []
@@ -137,6 +145,32 @@ class EventTrackerTest(unittest.TestCase):
         self.assertEqual([], callbacks)
         self.assertEqual(5, len(self.responses))
         self.assertTrue(all(response.closed for response in self.responses))
+
+    def test_track_rejects_oversized_response_before_callback(self):
+        callbacks = []
+        private_marker = "private-upstream-response"
+        self.response_body = (
+            "1" + ("x" * mixpanel.MAX_RESPONSE_BODY_BYTES) + private_marker
+        )
+        tracker = mixpanel.EventTracker("project-token")
+
+        with self.assertRaisesRegexp(
+                mixpanel.MixpanelError,
+                "Mixpanel response exceeds 1024 bytes") as raised:
+            tracker.track(
+                "Signed Up",
+                {"distinct_id": "user-1"},
+                lambda event, properties: callbacks.append((event, properties)),
+            )
+
+        self.assertNotIn(private_marker, str(raised.exception))
+        self.assertEqual([], callbacks)
+        self.assertEqual(1, len(self.responses))
+        self.assertTrue(self.responses[0].closed)
+        self.assertEqual(
+            [mixpanel.MAX_RESPONSE_BODY_BYTES + 1],
+            self.responses[0].read_sizes,
+        )
 
     def test_track_requires_distinct_id_without_optimized_asserts(self):
         tracker = mixpanel.EventTracker("project-token")

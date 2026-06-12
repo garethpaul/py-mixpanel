@@ -8,6 +8,7 @@ GITIGNORE="$ROOT_DIR/.gitignore"
 DOCS_PLANS="$ROOT_DIR/docs/plans"
 WORKFLOW="$ROOT_DIR/.github/workflows/check.yml"
 CI_PLAN="$ROOT_DIR/docs/plans/2026-06-10-ci-baseline.md"
+RESPONSE_BODY_PLAN="$ROOT_DIR/docs/plans/2026-06-12-response-body-size-boundary.md"
 
 require_file() {
   path=$1
@@ -30,6 +31,7 @@ for path in \
   "docs/plans/2026-06-09-scripted-baseline-check.md" \
   "docs/plans/2026-06-10-ci-baseline.md" \
   "docs/plans/2026-06-10-hosted-legacy-validation.md" \
+  "docs/plans/2026-06-12-response-body-size-boundary.md" \
   ".github/workflows/check.yml" \
   "scripts/check-baseline.sh"; do
   require_file "$path"
@@ -136,14 +138,28 @@ if ! grep -Fq "class MixpanelError" "$ROOT_DIR/mixpanel.py" || \
   exit 1
 fi
 
+if ! grep -Fq "MAX_RESPONSE_BODY_BYTES = 1024" "$ROOT_DIR/mixpanel.py" || \
+   ! grep -Fq "resp.read(MAX_RESPONSE_BODY_BYTES + 1)" "$ROOT_DIR/mixpanel.py" || \
+   ! grep -Fq 'Mixpanel response exceeds 1024 bytes' "$ROOT_DIR/mixpanel.py"; then
+  printf '%s\n' "mixpanel.py must bound untrusted response bodies before acknowledgement validation." >&2
+  exit 1
+fi
+
 for test_contract in \
   "test_track_accepts_stripped_success_acknowledgement" \
-  "test_track_rejects_failed_or_unexpected_acknowledgements"; do
+  "test_track_rejects_failed_or_unexpected_acknowledgements" \
+  "test_track_rejects_oversized_response_before_callback"; do
   if ! grep -Fq "$test_contract" "$ROOT_DIR/test_mixpanel.py"; then
     printf '%s\n' "test_mixpanel.py must include $test_contract." >&2
     exit 1
   fi
 done
+
+if ! grep -Fq "MAX_RESPONSE_BODY_BYTES + 1" "$ROOT_DIR/test_mixpanel.py" || \
+   ! grep -Fq "private-upstream-response" "$ROOT_DIR/test_mixpanel.py"; then
+  printf '%s\n' "test_mixpanel.py must prove the bounded read and body-safe overflow error." >&2
+  exit 1
+fi
 
 if ! grep -Fq "finally:" "$ROOT_DIR/mixpanel.py" || ! grep -Fq "resp.close()" "$ROOT_DIR/mixpanel.py"; then
   printf '%s\n' "mixpanel.py must close opened HTTP responses on every read path." >&2
@@ -195,3 +211,17 @@ if ! grep -Fq "Status: Completed" "$CI_PLAN" || ! grep -Fq "make check" "$CI_PLA
   printf '%s\n' "CI baseline plan must record completed status and make check verification." >&2
   exit 1
 fi
+
+if ! grep -Fq "Status: Completed" "$RESPONSE_BODY_PLAN" || \
+   ! grep -Fq "make check" "$RESPONSE_BODY_PLAN" || \
+   ! grep -Fq "focused hostile mutations" "$RESPONSE_BODY_PLAN"; then
+  printf '%s\n' "Response body size plan must record completed status and actual verification." >&2
+  exit 1
+fi
+
+for documented in "$README" "$ROOT_DIR/SECURITY.md" "$ROOT_DIR/VISION.md" "$ROOT_DIR/CHANGES.md"; do
+  if ! grep -Fq "bounded response reads" "$documented"; then
+    printf '%s\n' "$documented must document bounded response reads." >&2
+    exit 1
+  fi
+done

@@ -54,6 +54,9 @@ started.
 
 Opened Mixpanel HTTP responses should be closed after successful and failed
 reads so repeated analytics submission cannot exhaust local network resources.
+The client also keeps bounded response reads in place before acknowledgement
+validation so an untrusted endpoint cannot force an arbitrarily large body into
+memory or reflect that content through an overflow error.
 
 Hosted verification runs the full mocked request and callback gate in a
 digest-pinned Python 2.7.18 container with read-only repository permissions.

@@ -36,6 +36,7 @@ Priority:
 - Keep request timeouts explicit
 - Close Mixpanel HTTP responses after successful and failed reads
 - Validate Mixpanel response acknowledgements before success callbacks run
+- Preserve bounded response reads before acknowledgement validation
 - Treat `urllib2` and Python 2 idioms as legacy constraints
 - Keep legacy verification from leaving Python bytecode in the repository tree
 - Run the complete legacy gate in digest-pinned hosted Python 2.7 without
