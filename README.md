@@ -65,6 +65,9 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 - Mixpanel HTTP requests use a ten-second timeout by default.
 - Opened Mixpanel HTTP responses are closed after reads succeed or fail so
   repeated tracking does not leak network resources.
+- Tracking succeeds only when Mixpanel returns a stripped plain-text `1`
+  acknowledgement. Rejected, empty, or unexpected bodies raise `MixpanelError`
+  before the success callback runs.
 - Use `track_async` only when background submission is expected by the caller.
 - Callbacks must be callable when provided; invalid callbacks raise
   `ValueError` before HTTP requests or async worker threads are started.
@@ -142,6 +145,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   full Python 2.7 hosted verification and fail-closed metadata checks.
 - See `docs/plans/2026-06-10-response-close-guard.md` for deterministic HTTP
   response cleanup on successful and failed reads.
+- See `docs/plans/2026-06-12-response-acknowledgement-validation.md` for strict
+  Mixpanel acceptance checks before callbacks.
 
 ## Contributing
 

@@ -92,6 +92,22 @@ if ! grep -Fq "callable(callback)" "$ROOT_DIR/mixpanel.py"; then
   exit 1
 fi
 
+if ! grep -Fq "class MixpanelError" "$ROOT_DIR/mixpanel.py" || \
+   ! grep -Fq "validate_mixpanel_response(response_body)" "$ROOT_DIR/mixpanel.py" || \
+   ! grep -Fq 'response_body.strip() != "1"' "$ROOT_DIR/mixpanel.py"; then
+  printf '%s\n' "mixpanel.py must reject failed or unexpected response acknowledgements." >&2
+  exit 1
+fi
+
+for test_contract in \
+  "test_track_accepts_stripped_success_acknowledgement" \
+  "test_track_rejects_failed_or_unexpected_acknowledgements"; do
+  if ! grep -Fq "$test_contract" "$ROOT_DIR/test_mixpanel.py"; then
+    printf '%s\n' "test_mixpanel.py must include $test_contract." >&2
+    exit 1
+  fi
+done
+
 if ! grep -Fq "finally:" "$ROOT_DIR/mixpanel.py" || ! grep -Fq "resp.close()" "$ROOT_DIR/mixpanel.py"; then
   printf '%s\n' "mixpanel.py must close opened HTTP responses on every read path." >&2
   exit 1

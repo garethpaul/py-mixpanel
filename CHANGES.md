@@ -1,5 +1,12 @@
 # Changes
 
+## 2026-06-12
+
+- Added strict validation for Mixpanel's plain-text success acknowledgement.
+- Rejected failed, empty, whitespace-only, and unexpected response bodies with
+  a stable `MixpanelError` before invoking success callbacks.
+- Added mocked coverage proving responses close on every acknowledgement path.
+
 ## 2026-06-10
 
 - Added read-only hosted verification in a digest-pinned Python 2.7.18

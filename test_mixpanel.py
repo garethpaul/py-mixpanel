@@ -11,14 +11,15 @@ import mixpanel
 
 
 class FakeResponse(object):
-    def __init__(self, read_error=None):
+    def __init__(self, response_body="1", read_error=None):
+        self.response_body = response_body
         self.read_error = read_error
         self.closed = False
 
     def read(self):
         if self.read_error is not None:
             raise self.read_error
-        return "1"
+        return self.response_body
 
     def close(self):
         self.closed = True
@@ -43,6 +44,7 @@ class EventTrackerTest(unittest.TestCase):
         self.urls = []
         self.timeouts = []
         self.responses = []
+        self.response_body = "1"
         self.response_read_error = None
         self.original_urlopen = mixpanel.urllib2.urlopen
         self.original_time = mixpanel.time.time
@@ -56,7 +58,7 @@ class EventTrackerTest(unittest.TestCase):
     def urlopen(self, url, timeout=None):
         self.urls.append(url)
         self.timeouts.append(timeout)
-        response = FakeResponse(self.response_read_error)
+        response = FakeResponse(self.response_body, self.response_read_error)
         self.responses.append(response)
         return response
 
@@ -104,6 +106,37 @@ class EventTrackerTest(unittest.TestCase):
         self.assertEqual([], callbacks)
         self.assertEqual(1, len(self.responses))
         self.assertTrue(self.responses[0].closed)
+
+    def test_track_accepts_stripped_success_acknowledgement(self):
+        callbacks = []
+        self.response_body = "  1\n"
+        tracker = mixpanel.EventTracker("project-token")
+
+        tracker.track(
+            "Signed Up",
+            {"distinct_id": "user-1"},
+            lambda event, properties: callbacks.append((event, properties)),
+        )
+
+        self.assertEqual(1, len(callbacks))
+        self.assertTrue(self.responses[0].closed)
+
+    def test_track_rejects_failed_or_unexpected_acknowledgements(self):
+        callbacks = []
+        tracker = mixpanel.EventTracker("project-token")
+
+        for response_body in ("0", "", " \t\n", "unexpected", None):
+            self.response_body = response_body
+            with self.assertRaisesRegexp(mixpanel.MixpanelError, "Mixpanel rejected the event"):
+                tracker.track(
+                    "Signed Up",
+                    {"distinct_id": "user-1"},
+                    lambda event, properties: callbacks.append((event, properties)),
+                )
+
+        self.assertEqual([], callbacks)
+        self.assertEqual(5, len(self.responses))
+        self.assertTrue(all(response.closed for response in self.responses))
 
     def test_track_requires_distinct_id_without_optimized_asserts(self):
         tracker = mixpanel.EventTracker("project-token")

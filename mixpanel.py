@@ -11,6 +11,10 @@ import base64
 import time
 
 
+class MixpanelError(Exception):
+  pass
+
+
 def open_mixpanel_url(url):
   return urllib2.urlopen(url, timeout=REQUEST_TIMEOUT_SECONDS)
 
@@ -18,6 +22,11 @@ def open_mixpanel_url(url):
 def validate_callback(callback):
   if callback is not None and not callable(callback):
     raise ValueError("Callback must be callable")
+
+
+def validate_mixpanel_response(response_body):
+  if not isinstance(response_body, basestring) or response_body.strip() != "1":
+    raise MixpanelError("Mixpanel rejected the event")
 
 
 class EventTracker(object):
@@ -85,9 +94,10 @@ class EventTracker(object):
     else:
       resp = open_mixpanel_url(TRACK_BASE_URL % data)
     try:
-      resp.read()
+      response_body = resp.read()
     finally:
       resp.close()
+    validate_mixpanel_response(response_body)
 
     if callback is not None:
       callback(event, properties)

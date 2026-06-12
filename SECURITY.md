@@ -41,6 +41,9 @@ distinct IDs should be validated before any Mixpanel request is built so
 malformed analytics payloads do not leave the process.
 Event names should be normalized before payload construction so caller typos do
 not create visually duplicated analytics events.
+Treat only a stripped plain-text `1` response as an accepted event; failed or
+unexpected acknowledgements must raise a sanitized error without invoking the
+success callback or exposing the upstream body.
 
 Event property dictionaries can contain user identifiers and behavior data. The tracker copies caller-provided properties before adding Mixpanel defaults so application-owned data is not mutated during validation or submission.
 
