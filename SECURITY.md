@@ -42,8 +42,22 @@ distinct IDs should be validated before any Mixpanel request is built so
 malformed analytics payloads do not leave the process.
 Event names should be normalized before payload construction so caller typos do
 not create visually duplicated analytics events.
+Treat only a stripped plain-text `1` response as an accepted event; failed or
+unexpected acknowledgements must raise a sanitized error without invoking the
+success callback or exposing the upstream body.
 
 Event property dictionaries can contain user identifiers and behavior data. The tracker copies caller-provided properties before adding Mixpanel defaults so application-owned data is not mutated during validation or submission.
+
+Callbacks should be callable before submission starts. Invalid callbacks are
+rejected before analytics payloads are sent or async worker threads are
+started.
+
+Opened Mixpanel HTTP responses should be closed after successful and failed
+reads so repeated analytics submission cannot exhaust local network resources.
+
+Hosted verification runs the full mocked request and callback gate in a
+digest-pinned Python 2.7.18 container with read-only repository permissions.
+Tracked-secret inspection fails closed if Git cannot inspect the checkout.
 
 ## Dependency and Supply Chain Security
 

@@ -11,8 +11,22 @@ import base64
 import time
 
 
+class MixpanelError(Exception):
+  pass
+
+
 def open_mixpanel_url(url):
   return urllib2.urlopen(url, timeout=REQUEST_TIMEOUT_SECONDS)
+
+
+def validate_callback(callback):
+  if callback is not None and not callable(callback):
+    raise ValueError("Callback must be callable")
+
+
+def validate_mixpanel_response(response_body):
+  if not isinstance(response_body, basestring) or response_body.strip() != "1":
+    raise MixpanelError("Mixpanel rejected the event")
 
 
 class EventTracker(object):
@@ -53,6 +67,7 @@ class EventTracker(object):
     if not isinstance(event, basestring) or not event.strip():
       raise ValueError("Must specify an event")
     event = event.strip()
+    validate_callback(callback)
 
     if properties is None:
       properties = {}
@@ -78,7 +93,11 @@ class EventTracker(object):
       resp = open_mixpanel_url(ARCHIVE_BASE_URL % (data, urllib.quote(self.api_key, safe='')))
     else:
       resp = open_mixpanel_url(TRACK_BASE_URL % data)
-    resp.read()
+    try:
+      response_body = resp.read()
+    finally:
+      resp.close()
+    validate_mixpanel_response(response_body)
 
     if callback is not None:
       callback(event, properties)
@@ -98,6 +117,8 @@ class EventTracker(object):
     :return: Thread object that will process this request
     :rtype: :class:`threading.Thread`
     """
+    validate_callback(callback)
+
     from threading import Thread
     t = Thread(target=self.track, kwargs={
       'event': event, 

@@ -12,7 +12,7 @@ This README is based on the checked-in source, manifests, scripts, and repositor
 ## Repository Contents
 
 - `README.md` - project overview and local usage notes
-- `.github/workflows/check.yml` - GitHub Actions baseline for `make check`
+- `.github/workflows/check.yml` - pinned Python 2.7 hosted `make check` gate
 - `CHANGES.md` - notable maintenance changes
 - `Makefile` - local verification entry points
 - `docs/plans` - canonical completed maintenance plans
@@ -63,7 +63,14 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 - Caller-provided properties are copied before the tracker adds `token` or
   `time`, so validation and payload enrichment do not mutate application data.
 - Mixpanel HTTP requests use a ten-second timeout by default.
+- Opened Mixpanel HTTP responses are closed after reads succeed or fail so
+  repeated tracking does not leak network resources.
+- Tracking succeeds only when Mixpanel returns a stripped plain-text `1`
+  acknowledgement. Rejected, empty, or unexpected bodies raise `MixpanelError`
+  before the success callback runs.
 - Use `track_async` only when background submission is expected by the caller.
+- Callbacks must be callable when provided; invalid callbacks raise
+  `ValueError` before HTTP requests or async worker threads are started.
 
 ## Testing and Verification
 
@@ -71,9 +78,6 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 - Run `make build` for the static legacy verification gate; it uses the same
   mocked Python 2 tests as `make test`.
 - Run `scripts/check-baseline.sh` for the SDK-free repository baseline guard.
-- GitHub Actions runs `make check` on pushes and pull requests with Python
-  3.12. Python 2 syntax and mocked HTTP tests run when `python2` is installed
-  and report clear skips otherwise.
 - `make check` delegates to `make verify`, which compile-checks the legacy Python 2 files, runs mocked HTTP tests for tracking, import URLs, request validation, request timeouts, request-error behavior, caller-property isolation, and async callback behavior, and verifies completed plans under `docs/plans`.
 - The baseline script checks required files, completed docs-plan metadata,
   verification documentation, and local secret/editor metadata hygiene.
@@ -82,6 +86,10 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 - Request validation coverage includes nonblank project tokens, API keys when
   provided, event names, properties dictionaries, and nonblank caller-provided
   distinct IDs.
+- GitHub Actions runs the complete gate on pushes, pull requests, and manual
+  dispatches in the official Python 2.7.18 image pinned by digest. The workflow
+  uses read-only repository permissions and credential-free checkout, and the
+  baseline fails if Git cannot inspect tracked secret or editor metadata.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
@@ -103,6 +111,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   built.
 - Tracking validation rejects non-dict properties and blank distinct IDs before
   analytics payloads are encoded or sent.
+- Callback validation rejects non-callable callbacks before analytics payloads
+  are sent or async worker threads are started.
 
 ## Maintenance Notes
 
@@ -130,8 +140,16 @@ When the required SDK or runtime is unavailable, use static checks and source re
   repository baseline guard and local secret/editor metadata ignores.
 - See `docs/plans/2026-06-09-bytecode-free-verification.md` for the
   bytecode-free legacy verification guard.
-- See `docs/plans/2026-06-10-ci-baseline.md` for the lightweight GitHub
-  Actions baseline.
+- See `docs/plans/2026-06-10-ci-baseline.md` for the integrated hosted CI
+  contract and workflow mutation coverage.
+- See `docs/plans/2026-06-10-callback-validation.md` for the callback
+  validation guard.
+- See `docs/plans/2026-06-10-hosted-legacy-validation.md` for digest-pinned,
+  full Python 2.7 hosted verification and fail-closed metadata checks.
+- See `docs/plans/2026-06-10-response-close-guard.md` for deterministic HTTP
+  response cleanup on successful and failed reads.
+- See `docs/plans/2026-06-12-response-acknowledgement-validation.md` for strict
+  Mixpanel acceptance checks before callbacks.
 
 ## Contributing
 

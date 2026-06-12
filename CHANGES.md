@@ -1,13 +1,25 @@
 # Changes
 
+## 2026-06-12
+
+- Added strict validation for Mixpanel's plain-text success acknowledgement.
+- Rejected failed, empty, whitespace-only, and unexpected response bodies with
+  a stable `MixpanelError` before invoking success callbacks.
+- Added mocked coverage proving responses close on every acknowledgement path.
+
 ## 2026-06-10
 
-- Added a lightweight GitHub Actions workflow that runs `make check` for the
-  legacy Mixpanel tracking baseline.
-- Guarded Python 2 syntax and mocked HTTP tests so hosted CI can run the static
-  baseline when Python 2 is unavailable.
-- Extended the scripted baseline to require the CI workflow and completed CI
-  plan.
+- Added read-only hosted verification in a digest-pinned Python 2.7.18
+  container without skipping legacy tests, with credential-free checkout and
+  manual dispatch support.
+- Made tracked local metadata inspection fail closed when Git cannot inspect
+  the checkout.
+- Extended the scripted baseline to require the hosted workflow and completed
+  CI plans while rejecting weakened workflow contracts.
+- Added callback validation so non-callable callbacks fail before HTTP
+  requests or async worker threads start.
+- Closed Mixpanel HTTP responses after successful and failed reads to prevent
+  repeated tracking from leaking network resources.
 
 ## 2026-06-09
 

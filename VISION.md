@@ -31,10 +31,16 @@ Priority:
 - Keep a scriptable baseline guard for required files and local metadata
 - Reject events without caller-provided `distinct_id` before any request
 - Avoid mutating caller-provided event properties during payload enrichment
+- Reject invalid callbacks before requests or async worker threads start
 - Keep request failure behavior visible to callers and covered by mocks
 - Keep request timeouts explicit
+- Close Mixpanel HTTP responses after successful and failed reads
+- Validate Mixpanel response acknowledgements before success callbacks run
 - Treat `urllib2` and Python 2 idioms as legacy constraints
 - Keep legacy verification from leaving Python bytecode in the repository tree
+- Run the complete legacy gate in digest-pinned hosted Python 2.7 without
+  skipping mocked request or callback coverage
+- Fail closed when tracked secret or editor metadata cannot be inspected
 - Keep completed maintenance plans under `docs/plans`
 - Keep the static `make check` baseline running in GitHub Actions
 

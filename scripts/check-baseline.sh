@@ -6,7 +6,7 @@ README="$ROOT_DIR/README.md"
 MAKEFILE="$ROOT_DIR/Makefile"
 GITIGNORE="$ROOT_DIR/.gitignore"
 DOCS_PLANS="$ROOT_DIR/docs/plans"
-CI_WORKFLOW="$ROOT_DIR/.github/workflows/check.yml"
+WORKFLOW="$ROOT_DIR/.github/workflows/check.yml"
 CI_PLAN="$ROOT_DIR/docs/plans/2026-06-10-ci-baseline.md"
 
 require_file() {
@@ -24,32 +24,84 @@ for path in \
   "README.md" \
   "SECURITY.md" \
   "VISION.md" \
-  ".github/workflows/check.yml" \
   "mixpanel.py" \
   "test_mixpanel.py" \
   "docs/plans/2026-06-08-py-mixpanel-baseline.md" \
   "docs/plans/2026-06-09-scripted-baseline-check.md" \
   "docs/plans/2026-06-10-ci-baseline.md" \
+  "docs/plans/2026-06-10-hosted-legacy-validation.md" \
+  ".github/workflows/check.yml" \
   "scripts/check-baseline.sh"; do
   require_file "$path"
 done
 
+exact_line_count() {
+  awk -v expected="$2" '$0 == expected { count += 1 } END { print count + 0 }' "$1"
+}
+
+if [ "$(exact_line_count "$WORKFLOW" 'permissions:')" -ne 1 ] || \
+   [ "$(exact_line_count "$WORKFLOW" '  contents: read')" -ne 1 ]; then
+  printf '%s\n' "Hosted validation must use read-only repository contents permission." >&2
+  exit 1
+fi
+
+if grep -Eq '^[[:space:]]+permissions:' "$WORKFLOW" || \
+   grep -Eq '(^|[[:space:]])write-all([[:space:]]|$)' "$WORKFLOW" || \
+   grep -Eq '^[[:space:]]+[^#][^:]*:[[:space:]]*write([[:space:]]*(#.*)?)?$' "$WORKFLOW"; then
+  printf '%s\n' "Hosted validation must not add nested or write-capable permissions." >&2
+  exit 1
+fi
+
+if [ "$(grep -Fc 'uses: actions/checkout@' "$WORKFLOW")" -ne 1 ] || \
+   ! grep -Fq 'uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3' "$WORKFLOW"; then
+  printf '%s\n' "Hosted validation must pin the reviewed actions/checkout v6.0.3 commit." >&2
+  exit 1
+fi
+
+if [ "$(exact_line_count "$WORKFLOW" '          persist-credentials: false')" -ne 1 ]; then
+  printf '%s\n' "Hosted validation must disable checkout credential persistence." >&2
+  exit 1
+fi
+
+if [ "$(grep -Fc 'image: python:2.7.18@' "$WORKFLOW")" -ne 1 ] || \
+   ! grep -Fq 'image: python:2.7.18@sha256:c934af72b8bd03b9804d5bde2569c320926e70392d708d113a2e71bcf98c8a20' "$WORKFLOW"; then
+  printf '%s\n' "Hosted validation must pin the reviewed Python 2.7.18 image digest." >&2
+  exit 1
+fi
+
+if grep -Fq 'setup-python@' "$WORKFLOW"; then
+  printf '%s\n' "Hosted validation must use the pinned Python 2 container, not setup-python." >&2
+  exit 1
+fi
+
+if grep -Fq 'continue-on-error' "$WORKFLOW" || grep -Fq 'command -v python2' "$WORKFLOW"; then
+  printf '%s\n' "Hosted validation must not allow legacy verification failures." >&2
+  exit 1
+fi
+
+if [ "$(exact_line_count "$WORKFLOW" '        run: make check')" -ne 1 ]; then
+  printf '%s\n' "Hosted validation must run the canonical make check gate." >&2
+  exit 1
+fi
+
+for workflow_contract in \
+  '  workflow_dispatch:' \
+  '  cancel-in-progress: true' \
+  '    runs-on: ubuntu-24.04' \
+  '    timeout-minutes: 10'; do
+  if [ "$(exact_line_count "$WORKFLOW" "$workflow_contract")" -ne 1 ]; then
+    printf '%s\n' "Hosted validation is missing required workflow contract: $workflow_contract" >&2
+    exit 1
+  fi
+done
+
+if grep -Fq 'command -v python2' "$MAKEFILE" || grep -Fq 'Skipping legacy Python 2' "$MAKEFILE"; then
+  printf '%s\n' "Makefile must require Python 2 checks instead of skipping them." >&2
+  exit 1
+fi
+
 if ! grep -Fq "scripts/check-baseline.sh" "$MAKEFILE"; then
   printf '%s\n' "Makefile must run scripts/check-baseline.sh from make check." >&2
-  exit 1
-fi
-
-if ! grep -Fq "Skipping legacy Python 2 syntax checks" "$MAKEFILE" ||
-  ! grep -Fq "Skipping legacy Python 2 Mixpanel tests" "$MAKEFILE"; then
-  printf '%s\n' "Makefile must guard Python 2-dependent checks for hosted CI." >&2
-  exit 1
-fi
-
-if ! grep -Fq "actions/checkout@v4" "$CI_WORKFLOW" ||
-  ! grep -Fq "actions/setup-python@v5" "$CI_WORKFLOW" ||
-  ! grep -Fq 'python-version: "3.12"' "$CI_WORKFLOW" ||
-  ! grep -Fq "make check" "$CI_WORKFLOW"; then
-  printf '%s\n' "GitHub Actions check workflow must set up Python and run make check." >&2
   exit 1
 fi
 
@@ -72,6 +124,32 @@ if ! grep -Fq "GitHub Actions" "$README"; then
   exit 1
 fi
 
+if ! grep -Fq "callable(callback)" "$ROOT_DIR/mixpanel.py"; then
+  printf '%s\n' "mixpanel.py must validate callbacks before request or thread creation." >&2
+  exit 1
+fi
+
+if ! grep -Fq "class MixpanelError" "$ROOT_DIR/mixpanel.py" || \
+   ! grep -Fq "validate_mixpanel_response(response_body)" "$ROOT_DIR/mixpanel.py" || \
+   ! grep -Fq 'response_body.strip() != "1"' "$ROOT_DIR/mixpanel.py"; then
+  printf '%s\n' "mixpanel.py must reject failed or unexpected response acknowledgements." >&2
+  exit 1
+fi
+
+for test_contract in \
+  "test_track_accepts_stripped_success_acknowledgement" \
+  "test_track_rejects_failed_or_unexpected_acknowledgements"; do
+  if ! grep -Fq "$test_contract" "$ROOT_DIR/test_mixpanel.py"; then
+    printf '%s\n' "test_mixpanel.py must include $test_contract." >&2
+    exit 1
+  fi
+done
+
+if ! grep -Fq "finally:" "$ROOT_DIR/mixpanel.py" || ! grep -Fq "resp.close()" "$ROOT_DIR/mixpanel.py"; then
+  printf '%s\n' "mixpanel.py must close opened HTTP responses on every read path." >&2
+  exit 1
+fi
+
 for ignored in "*.py[cod]" "__pycache__/" "dist" "build" ".env" ".env.*" ".idea/" ".vscode/" "*.iml"; do
   if ! grep -Fq "$ignored" "$GITIGNORE"; then
     printf '%s\n' ".gitignore must include $ignored" >&2
@@ -85,7 +163,10 @@ if [ -n "$bytecode_artifacts" ]; then
   exit 1
 fi
 
-tracked_local=$(git -C "$ROOT_DIR" ls-files '.env' '.env.*' '.idea' '.vscode' '*.iml' || true)
+if ! tracked_local=$(git -C "$ROOT_DIR" ls-files '.env' '.env.*' '.idea' '.vscode' '*.iml'); then
+  printf '%s\n' "Unable to inspect tracked local secret or editor metadata." >&2
+  exit 1
+fi
 if [ -n "$tracked_local" ]; then
   printf '%s\n%s\n' "Local secrets or editor metadata must not be tracked:" "$tracked_local" >&2
   exit 1
