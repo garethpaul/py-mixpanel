@@ -1,13 +1,13 @@
 ---
 title: Project Token Authority
 type: fix
-status: planned
+status: completed
 date: 2026-06-13
 ---
 
 # Project Token Authority
 
-Status: Planned
+Status: Completed
 
 ## Context
 
@@ -97,4 +97,32 @@ Requirements:
 - `make check`
 - digest-pinned Python 2.7.18 container `make check`
 - workflow YAML parse
+- `git diff --check`
+
+## Work Completed
+
+- Made the validated `EventTracker` project token authoritative for every
+  outbound event payload.
+- Added synchronous and asynchronous regressions proving conflicting caller
+  tokens are not sent while input dictionaries and explicit timestamps remain
+  unchanged.
+- Extended the fail-closed checker and public documentation with the project
+  token authority contract.
+
+## Verification Results
+
+Completed locally on 2026-06-13:
+
+- `python2 test_mixpanel.py` (21 tests passed)
+- `sh scripts/check-baseline.sh`
+- `make lint`
+- `make test`
+- `make build`
+- `make docs`
+- `make verify`
+- `make check`
+- digest-pinned Python 2.7.18 container `make check` with canonical and worktree
+  Git paths mounted for metadata inspection
+- workflow YAML parse
+- six hostile project-token contract mutations rejected
 - `git diff --check`

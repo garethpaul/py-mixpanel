@@ -48,6 +48,9 @@ success callback or exposing the upstream body.
 
 Event property dictionaries can contain user identifiers and behavior data. The tracker copies caller-provided properties before adding Mixpanel defaults so application-owned data is not mutated during validation or submission.
 
+The configured project token remains authoritative after that copy; a caller
+property cannot redirect submission to a different Mixpanel project.
+
 Callbacks should be callable before submission starts. Invalid callbacks are
 rejected before analytics payloads are sent or async worker threads are
 started.

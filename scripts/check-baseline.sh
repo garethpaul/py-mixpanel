@@ -32,6 +32,7 @@ for path in \
   "docs/plans/2026-06-10-ci-baseline.md" \
   "docs/plans/2026-06-10-hosted-legacy-validation.md" \
   "docs/plans/2026-06-12-response-body-size-boundary.md" \
+  "docs/plans/2026-06-13-project-token-authority.md" \
   ".github/workflows/check.yml" \
   "scripts/check-baseline.sh"; do
   require_file "$path"
@@ -137,6 +138,23 @@ if [ "$(grep -Fc 'event = validate_event(event)' "$ROOT_DIR/mixpanel.py")" -ne 2
   exit 1
 fi
 
+if [ "$(grep -Fc "properties['token'] = self.token" "$ROOT_DIR/mixpanel.py")" -ne 1 ] || \
+   grep -Fq 'if not properties.has_key("token")' "$ROOT_DIR/mixpanel.py"; then
+  printf '%s\n' "Outbound event payloads must use the configured project token." >&2
+  exit 1
+fi
+
+for token_contract in \
+  "test_track_uses_configured_token_over_caller_property" \
+  "test_track_async_uses_configured_token_over_caller_property" \
+  '"token": "caller-token"' \
+  'self.assertEqual("project-token", payload["properties"]["token"])'; do
+  if ! grep -Fq "$token_contract" "$ROOT_DIR/test_mixpanel.py"; then
+    printf '%s\n' "Project token authority tests must preserve $token_contract." >&2
+    exit 1
+  fi
+done
+
 for async_contract in \
   "test_track_async_rejects_invalid_inputs_before_thread" \
   "self.assertEqual([], FakeThread.created)" \
@@ -238,6 +256,10 @@ fi
 for documented in "$README" "$ROOT_DIR/SECURITY.md" "$ROOT_DIR/VISION.md" "$ROOT_DIR/CHANGES.md"; do
   if ! grep -Fq "bounded response reads" "$documented"; then
     printf '%s\n' "$documented must document bounded response reads." >&2
+    exit 1
+  fi
+  if ! grep -Fq "configured project token" "$documented"; then
+    printf '%s\n' "$documented must document configured project token authority." >&2
     exit 1
   fi
 done

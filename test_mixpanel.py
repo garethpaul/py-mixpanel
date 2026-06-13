@@ -268,6 +268,31 @@ class EventTrackerTest(unittest.TestCase):
         self.assertEqual(1234567890, payload["properties"]["time"])
         self.assertEqual("free", payload["properties"]["plan"])
 
+    def test_track_uses_configured_token_over_caller_property(self):
+        callbacks = []
+        tracker = mixpanel.EventTracker("project-token")
+        properties = {
+            "distinct_id": "user-6",
+            "token": "caller-token",
+            "time": 987654321,
+        }
+
+        tracker.track(
+            "Token Authority",
+            properties,
+            lambda event, values: callbacks.append((event, values.copy())),
+        )
+
+        self.assertEqual({
+            "distinct_id": "user-6",
+            "token": "caller-token",
+            "time": 987654321,
+        }, properties)
+        parsed, query, payload = self.payload_from_url(self.urls[0])
+        self.assertEqual("project-token", payload["properties"]["token"])
+        self.assertEqual(987654321, payload["properties"]["time"])
+        self.assertEqual([("Token Authority", payload["properties"])], callbacks)
+
     def test_track_propagates_request_errors_without_callback(self):
         callbacks = []
         tracker = mixpanel.EventTracker("project-token")
@@ -332,6 +357,25 @@ class EventTrackerTest(unittest.TestCase):
         self.assertEqual("user-3", payload["properties"]["distinct_id"])
         self.assertEqual([mixpanel.REQUEST_TIMEOUT_SECONDS], self.timeouts)
         self.assertEqual([("Async Event", payload["properties"])], callbacks)
+
+    def test_track_async_uses_configured_token_over_caller_property(self):
+        tracker = mixpanel.EventTracker("project-token")
+        properties = {"distinct_id": "user-7", "token": "caller-token"}
+        original_thread = threading.Thread
+        FakeThread.created = []
+        threading.Thread = FakeThread
+
+        try:
+            tracker.track_async("Async Token Authority", properties)
+        finally:
+            threading.Thread = original_thread
+
+        self.assertEqual({
+            "distinct_id": "user-7",
+            "token": "caller-token",
+        }, properties)
+        parsed, query, payload = self.payload_from_url(self.urls[0])
+        self.assertEqual("project-token", payload["properties"]["token"])
 
     def test_track_async_requires_callable_callback_before_thread(self):
         tracker = mixpanel.EventTracker("project-token")

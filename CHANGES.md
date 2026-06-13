@@ -1,5 +1,10 @@
 # Changes
 
+## 2026-06-13
+
+- Made the configured project token authoritative for synchronous and
+  asynchronous payloads while preserving caller dictionaries and timestamps.
+
 ## 2026-06-12
 
 - Added synchronous async-input preflight so invalid events, properties, and

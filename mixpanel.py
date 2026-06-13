@@ -99,8 +99,7 @@ class EventTracker(object):
     validate_callback(callback)
     properties = prepare_properties(properties)
 
-    if not properties.has_key("token"):
-      properties['token'] = self.token
+    properties['token'] = self.token
     if not properties.has_key("time"):
       properties['time'] = int(time.time())
 

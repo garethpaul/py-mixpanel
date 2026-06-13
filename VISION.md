@@ -21,6 +21,7 @@ Priority:
 
 - Preserve the `EventTracker.track` and `track_async` API shape
 - Keep token and API-key handling caller-controlled
+- Keep the configured project token authoritative over event properties
 - Reject blank Mixpanel project tokens before request construction
 - Reject blank API keys before import request construction
 - Reject blank event names before request construction

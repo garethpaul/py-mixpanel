@@ -62,6 +62,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   HTTP request.
 - Caller-provided properties are copied before the tracker adds `token` or
   `time`, so validation and payload enrichment do not mutate application data.
+- The configured project token is authoritative for outbound payloads; a
+  caller property cannot redirect an event to another Mixpanel project.
 - Mixpanel HTTP requests use a ten-second timeout by default.
 - Opened Mixpanel HTTP responses are closed after reads succeed or fail so
   repeated tracking does not leak network resources.
@@ -154,6 +156,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   Mixpanel acceptance checks before callbacks.
 - See `docs/plans/2026-06-12-response-body-size-boundary.md` for bounded
   response reads before acknowledgement validation.
+- See `docs/plans/2026-06-13-project-token-authority.md` for the configured
+  project token boundary on synchronous and asynchronous payloads.
 
 ## Contributing
 
