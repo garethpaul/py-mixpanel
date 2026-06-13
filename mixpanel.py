@@ -47,6 +47,10 @@ def prepare_properties(properties):
   return properties
 
 
+def validate_json_properties(event, properties):
+  json.dumps({"event": event, "properties": properties})
+
+
 def validate_mixpanel_response(response_body):
   if not isinstance(response_body, basestring) or response_body.strip() != "1":
     raise MixpanelError("Mixpanel rejected the event")
@@ -136,6 +140,7 @@ class EventTracker(object):
     event = validate_event(event)
     validate_callback(callback)
     properties = prepare_properties(properties)
+    validate_json_properties(event, properties)
 
     from threading import Thread
     t = Thread(target=self.track, kwargs={

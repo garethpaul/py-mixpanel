@@ -4,6 +4,8 @@
 
 - Made the configured project token authoritative for synchronous and
   asynchronous payloads while preserving caller dictionaries and timestamps.
+- Rejected JSON-incompatible async properties before constructing a worker
+  thread or opening a Mixpanel request.
 
 ## 2026-06-12
 

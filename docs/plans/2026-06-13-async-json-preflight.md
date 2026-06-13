@@ -1,6 +1,6 @@
 # Async JSON Serialization Preflight
 
-Status: Pending
+Status: Completed
 
 ## Problem
 
@@ -45,8 +45,22 @@ no request is sent.
 
 ## Work Completed
 
-Pending implementation.
+- Added a validation-only standard-library JSON serialization pass after async
+  event/property normalization and before worker-thread import or construction.
+- Preserved project-token and timestamp enrichment inside `track`, so valid
+  asynchronous payload and callback timing remain unchanged.
+- Added a Python 2 regression proving a nested unsupported value raises
+  `TypeError` synchronously with no worker and no request.
+- Added fail-closed implementation, ordering, test, documentation, completed
+  status, and verification-evidence contracts.
 
 ## Verification Results
 
-Pending implementation and validation.
+- `python2 test_mixpanel.py` passed all 22 mocked tests.
+- Canonical `make check` passed on the host and in the network-disabled,
+  digest-pinned Python 2.7.18 container with a read-only source mount.
+- Eight hostile mutations covering preflight removal and ordering, JSON
+  validation, regression identity, no-worker evidence, documentation, and
+  completed plan status were rejected, including exact-evidence drift.
+- Workflow YAML parsing, exact-base protected-file comparison, added-line
+  secret scanning, generated-artifact scanning, and `git diff --check` passed.

@@ -33,9 +33,35 @@ for path in \
   "docs/plans/2026-06-10-hosted-legacy-validation.md" \
   "docs/plans/2026-06-12-response-body-size-boundary.md" \
   "docs/plans/2026-06-13-project-token-authority.md" \
+  "docs/plans/2026-06-13-async-json-preflight.md" \
   ".github/workflows/check.yml" \
   "scripts/check-baseline.sh"; do
   require_file "$path"
+done
+
+if ! grep -Fq 'def validate_json_properties(event, properties):' "$ROOT_DIR/mixpanel.py" || \
+   ! grep -Fq 'json.dumps({"event": event, "properties": properties})' "$ROOT_DIR/mixpanel.py"; then
+  printf '%s\n' "mixpanel.py must preserve JSON serialization preflight for async properties." >&2
+  exit 1
+fi
+
+async_json_line=$(grep -n '    validate_json_properties(event, properties)' "$ROOT_DIR/mixpanel.py" | cut -d: -f1)
+thread_import_line=$(grep -n '    from threading import Thread' "$ROOT_DIR/mixpanel.py" | cut -d: -f1)
+if [ -z "$async_json_line" ] || [ -z "$thread_import_line" ] || [ "$async_json_line" -ge "$thread_import_line" ]; then
+  printf '%s\n' "Async JSON serialization preflight must run before worker construction." >&2
+  exit 1
+fi
+
+for json_contract in \
+  "test_track_async_rejects_unserializable_properties_before_thread" \
+  'with self.assertRaises(TypeError):' \
+  '"nested": object()' \
+  '"unserializable properties must not create a worker"' \
+  '"unserializable properties must not open a request"'; do
+  if ! grep -Fq "$json_contract" "$ROOT_DIR/test_mixpanel.py"; then
+    printf '%s\n' "Async JSON preflight tests must preserve $json_contract." >&2
+    exit 1
+  fi
 done
 
 exact_line_count() {
@@ -253,6 +279,21 @@ if ! grep -Fq "Status: Completed" "$RESPONSE_BODY_PLAN" || \
   exit 1
 fi
 
+ASYNC_JSON_PLAN="$ROOT_DIR/docs/plans/2026-06-13-async-json-preflight.md"
+for evidence in \
+  'Canonical `make check` passed' \
+  'digest-pinned Python 2.7.18 container' \
+  'Eight hostile mutations' \
+  'Workflow YAML parsing' \
+  'secret scanning' \
+  'generated-artifact scanning' \
+  '`git diff --check` passed'; do
+  if ! grep -Fq "$evidence" "$ASYNC_JSON_PLAN"; then
+    printf '%s\n' "Async JSON preflight plan must preserve verification evidence: $evidence" >&2
+    exit 1
+  fi
+done
+
 for documented in "$README" "$ROOT_DIR/SECURITY.md" "$ROOT_DIR/VISION.md" "$ROOT_DIR/CHANGES.md"; do
   if ! grep -Fq "bounded response reads" "$documented"; then
     printf '%s\n' "$documented must document bounded response reads." >&2
@@ -260,6 +301,10 @@ for documented in "$README" "$ROOT_DIR/SECURITY.md" "$ROOT_DIR/VISION.md" "$ROOT
   fi
   if ! grep -Fq "configured project token" "$documented"; then
     printf '%s\n' "$documented must document configured project token authority." >&2
+    exit 1
+  fi
+  if ! grep -Fq "JSON-incompatible async properties" "$documented"; then
+    printf '%s\n' "$documented must document async JSON serialization preflight." >&2
     exit 1
   fi
 done

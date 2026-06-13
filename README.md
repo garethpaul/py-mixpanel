@@ -75,6 +75,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   `ValueError` before HTTP requests or async worker threads are started.
 - Invalid async event names, property containers, and distinct IDs raise
   `ValueError` before a worker thread is constructed or a request is opened.
+- JSON-incompatible async properties raise `TypeError` before a worker thread
+  is constructed or a request is opened.
 
 ## Testing and Verification
 
@@ -158,6 +160,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   response reads before acknowledgement validation.
 - See `docs/plans/2026-06-13-project-token-authority.md` for the configured
   project token boundary on synchronous and asynchronous payloads.
+- See `docs/plans/2026-06-13-async-json-preflight.md` for synchronous rejection
+  of JSON-incompatible async properties before worker creation.
 
 ## Contributing
 

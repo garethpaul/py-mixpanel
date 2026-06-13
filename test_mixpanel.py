@@ -421,6 +421,32 @@ class EventTrackerTest(unittest.TestCase):
         self.assertEqual([], FakeThread.created)
         self.assertEqual([], self.urls)
 
+    def test_track_async_rejects_unserializable_properties_before_thread(self):
+        tracker = mixpanel.EventTracker("project-token")
+        original_thread = threading.Thread
+        FakeThread.created = []
+        threading.Thread = FakeThread
+
+        try:
+            with self.assertRaises(TypeError):
+                tracker.track_async(
+                    "Async Event",
+                    {"distinct_id": "user-3", "nested": object()},
+                )
+        finally:
+            threading.Thread = original_thread
+
+        self.assertEqual(
+            [],
+            FakeThread.created,
+            "unserializable properties must not create a worker",
+        )
+        self.assertEqual(
+            [],
+            self.urls,
+            "unserializable properties must not open a request",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
