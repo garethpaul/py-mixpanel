@@ -92,7 +92,9 @@ class EventTrackerTest(unittest.TestCase):
         self.assertEqual("user-1", payload["properties"]["distinct_id"])
         self.assertEqual(1234567890, payload["properties"]["time"])
         self.assertEqual([mixpanel.REQUEST_TIMEOUT_SECONDS], self.timeouts)
-        self.assertEqual([("Signed Up", payload["properties"])], callbacks)
+        self.assertEqual([
+            ("Signed Up", {"distinct_id": "user-1"}),
+        ], callbacks)
         self.assertTrue(self.responses[0].closed)
         self.assertEqual(
             [mixpanel.MAX_RESPONSE_BODY_BYTES + 1],
@@ -235,7 +237,9 @@ class EventTrackerTest(unittest.TestCase):
         self.assertEqual("https", parsed.scheme)
         self.assertIn("data", query)
         self.assertEqual("Signed Up", payload["event"])
-        self.assertEqual([("Signed Up", payload["properties"])], callbacks)
+        self.assertEqual([
+            ("Signed Up", {"distinct_id": "user-1"}),
+        ], callbacks)
 
     def test_tracker_requires_nonblank_token(self):
         for token in (None, "", " \t\n"):
@@ -291,7 +295,29 @@ class EventTrackerTest(unittest.TestCase):
         parsed, query, payload = self.payload_from_url(self.urls[0])
         self.assertEqual("project-token", payload["properties"]["token"])
         self.assertEqual(987654321, payload["properties"]["time"])
-        self.assertEqual([("Token Authority", payload["properties"])], callbacks)
+        self.assertEqual([("Token Authority", properties)], callbacks)
+
+    def test_track_callback_excludes_configured_token_and_generated_time(self):
+        callbacks = []
+        tracker = mixpanel.EventTracker("project-token")
+
+        tracker.track(
+            "Credential Isolation",
+            {"distinct_id": "user-8", "plan": "paid"},
+            lambda event, values: callbacks.append((event, values.copy())),
+        )
+
+        parsed, query, payload = self.payload_from_url(self.urls[0])
+        self.assertEqual("project-token", payload["properties"]["token"])
+        self.assertEqual(1234567890, payload["properties"]["time"])
+        self.assertEqual([
+            ("Credential Isolation", {
+                "distinct_id": "user-8",
+                "plan": "paid",
+            }),
+        ], callbacks)
+        self.assertNotIn("token", callbacks[0][1])
+        self.assertNotIn("time", callbacks[0][1])
 
     def test_track_propagates_request_errors_without_callback(self):
         callbacks = []
@@ -356,7 +382,37 @@ class EventTrackerTest(unittest.TestCase):
         self.assertEqual("project-token", payload["properties"]["token"])
         self.assertEqual("user-3", payload["properties"]["distinct_id"])
         self.assertEqual([mixpanel.REQUEST_TIMEOUT_SECONDS], self.timeouts)
-        self.assertEqual([("Async Event", payload["properties"])], callbacks)
+        self.assertEqual([
+            ("Async Event", {"distinct_id": "user-3"}),
+        ], callbacks)
+
+    def test_track_async_callback_excludes_configured_token_and_generated_time(self):
+        callbacks = []
+        tracker = mixpanel.EventTracker("project-token")
+        original_thread = threading.Thread
+        FakeThread.created = []
+        threading.Thread = FakeThread
+
+        try:
+            tracker.track_async(
+                "Async Credential Isolation",
+                {"distinct_id": "user-9", "plan": "paid"},
+                lambda event, values: callbacks.append((event, values.copy())),
+            )
+        finally:
+            threading.Thread = original_thread
+
+        parsed, query, payload = self.payload_from_url(self.urls[0])
+        self.assertEqual("project-token", payload["properties"]["token"])
+        self.assertEqual(1234567890, payload["properties"]["time"])
+        self.assertEqual([
+            ("Async Credential Isolation", {
+                "distinct_id": "user-9",
+                "plan": "paid",
+            }),
+        ], callbacks)
+        self.assertNotIn("token", callbacks[0][1])
+        self.assertNotIn("time", callbacks[0][1])
 
     def test_track_async_uses_configured_token_over_caller_property(self):
         tracker = mixpanel.EventTracker("project-token")

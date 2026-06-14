@@ -102,6 +102,7 @@ class EventTracker(object):
     event = validate_event(event)
     validate_callback(callback)
     properties = prepare_properties(properties)
+    callback_properties = properties.copy()
 
     properties['token'] = self.token
     if not properties.has_key("time"):
@@ -120,7 +121,7 @@ class EventTracker(object):
     validate_mixpanel_response(response_body)
 
     if callback is not None:
-      callback(event, properties)
+      callback(event, callback_properties)
 
   def track_async(self, event, properties=None, callback=None):
     """Track an event asyncrhonously, essentially this runs the track

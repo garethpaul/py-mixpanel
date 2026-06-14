@@ -50,6 +50,9 @@ Event property dictionaries can contain user identifiers and behavior data. The 
 
 The configured project token remains authoritative after that copy; a caller
 property cannot redirect submission to a different Mixpanel project.
+Successful callbacks receive credential-free callback properties captured
+before the configured project token and generated timestamp are added to the
+outbound request. Caller-supplied values remain available to the caller.
 
 Callbacks should be callable before submission starts. Invalid callbacks are
 rejected before analytics payloads are sent or async worker threads are

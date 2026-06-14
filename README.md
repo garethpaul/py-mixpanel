@@ -119,6 +119,9 @@ When the required SDK or runtime is unavailable, use static checks and source re
   analytics payloads are encoded or sent.
 - Callback validation rejects non-callable callbacks before analytics payloads
   are sent or async worker threads are started.
+- Successful synchronous and asynchronous callbacks receive
+  credential-free callback properties captured before the configured project
+  token and any generated timestamp are added to the outbound payload.
 
 ## Maintenance Notes
 
@@ -162,6 +165,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   project token boundary on synchronous and asynchronous payloads.
 - See `docs/plans/2026-06-13-async-json-preflight.md` for synchronous rejection
   of JSON-incompatible async properties before worker creation.
+- See `docs/plans/2026-06-14-callback-token-isolation.md` for the callback
+  credential-isolation boundary.
 
 ## Contributing
 

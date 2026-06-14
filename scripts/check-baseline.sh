@@ -35,9 +35,35 @@ for path in \
   "docs/plans/2026-06-13-project-token-authority.md" \
   "docs/plans/2026-06-13-async-json-preflight.md" \
   "docs/plans/2026-06-14-location-independent-make.md" \
+  "docs/plans/2026-06-14-callback-token-isolation.md" \
   ".github/workflows/check.yml" \
   "scripts/check-baseline.sh"; do
   require_file "$path"
+done
+
+if ! grep -Fq '    callback_properties = properties.copy()' "$ROOT_DIR/mixpanel.py" || \
+   ! grep -Fq '      callback(event, callback_properties)' "$ROOT_DIR/mixpanel.py"; then
+  printf '%s\n' "mixpanel.py must isolate callback properties from outbound credentials." >&2
+  exit 1
+fi
+
+callback_snapshot_line=$(grep -n '    callback_properties = properties.copy()' "$ROOT_DIR/mixpanel.py" | cut -d: -f1)
+token_injection_line=$(grep -n "    properties\['token'\] = self.token" "$ROOT_DIR/mixpanel.py" | cut -d: -f1)
+if [ -z "$callback_snapshot_line" ] || [ -z "$token_injection_line" ] || \
+   [ "$callback_snapshot_line" -ge "$token_injection_line" ]; then
+  printf '%s\n' "Callback properties must be snapshotted before project-token enrichment." >&2
+  exit 1
+fi
+
+for callback_contract in \
+  "test_track_callback_excludes_configured_token_and_generated_time" \
+  "test_track_async_callback_excludes_configured_token_and_generated_time" \
+  'self.assertNotIn("token", callbacks[0][1])' \
+  'self.assertNotIn("time", callbacks[0][1])'; do
+  if ! grep -Fq "$callback_contract" "$ROOT_DIR/test_mixpanel.py"; then
+    printf '%s\n' "Callback credential-isolation tests must preserve $callback_contract." >&2
+    exit 1
+  fi
 done
 
 if ! grep -Fq 'def validate_json_properties(event, properties):' "$ROOT_DIR/mixpanel.py" || \
@@ -316,6 +342,27 @@ for evidence in \
   '`git diff --check`'; do
   if ! grep -Fq "$evidence" "$LOCATION_INDEPENDENT_MAKE_PLAN"; then
     printf '%s\n' "Location-independent Make plan must preserve verification evidence: $evidence" >&2
+    exit 1
+  fi
+done
+
+CALLBACK_TOKEN_PLAN="$ROOT_DIR/docs/plans/2026-06-14-callback-token-isolation.md"
+for evidence in \
+  'Status: Completed' \
+  'Canonical `make check` passed' \
+  'hostile mutations' \
+  'configured project token' \
+  'generated timestamp' \
+  '`git diff --check`'; do
+  if ! grep -Fq "$evidence" "$CALLBACK_TOKEN_PLAN"; then
+    printf '%s\n' "Callback token-isolation plan must preserve verification evidence: $evidence" >&2
+    exit 1
+  fi
+done
+
+for documented in "$README" "$ROOT_DIR/SECURITY.md" "$ROOT_DIR/CHANGES.md"; do
+  if ! grep -Fq "credential-free callback properties" "$documented"; then
+    printf '%s\n' "$documented must document credential-free callback properties." >&2
     exit 1
   fi
 done

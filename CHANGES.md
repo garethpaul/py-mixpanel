@@ -1,5 +1,11 @@
 # Changes
 
+## 2026-06-14
+
+- Returned credential-free callback properties for synchronous and
+  asynchronous success callbacks while retaining the configured project token
+  and generated timestamp in outbound Mixpanel payloads.
+
 ## 2026-06-13
 
 - Made the configured project token authoritative for synchronous and
