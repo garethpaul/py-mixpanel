@@ -34,6 +34,7 @@ for path in \
   "docs/plans/2026-06-12-response-body-size-boundary.md" \
   "docs/plans/2026-06-13-project-token-authority.md" \
   "docs/plans/2026-06-13-async-json-preflight.md" \
+  "docs/plans/2026-06-14-location-independent-make.md" \
   ".github/workflows/check.yml" \
   "scripts/check-baseline.sh"; do
   require_file "$path"
@@ -133,6 +134,19 @@ if ! grep -Fq "scripts/check-baseline.sh" "$MAKEFILE"; then
   printf '%s\n' "Makefile must run scripts/check-baseline.sh from make check." >&2
   exit 1
 fi
+
+for make_contract in \
+  'override REPO_ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))' \
+  '@cd "$(REPO_ROOT)" && for plan in docs/plans/*.md; do \' \
+  'cd "$(REPO_ROOT)" && python2 -c "import py_compile; py_compile.compile('\''mixpanel.py'\''' \
+  'cd "$(REPO_ROOT)" && python2 -c "import py_compile; py_compile.compile('\''test_mixpanel.py'\''' \
+  'cd "$(REPO_ROOT)" && PYTHONDONTWRITEBYTECODE=1 python2 -m unittest test_mixpanel' \
+  'cd "$(REPO_ROOT)" && scripts/check-baseline.sh'; do
+  if ! grep -Fq "$make_contract" "$MAKEFILE"; then
+    printf '%s\n' "Makefile must preserve rooted recipe: $make_contract" >&2
+    exit 1
+  fi
+done
 
 for target in "docs:" "lint:" "test:" "build:" "verify:" "check:"; do
   if ! grep -Fq "$target" "$MAKEFILE"; then
@@ -290,6 +304,18 @@ for evidence in \
   '`git diff --check` passed'; do
   if ! grep -Fq "$evidence" "$ASYNC_JSON_PLAN"; then
     printf '%s\n' "Async JSON preflight plan must preserve verification evidence: $evidence" >&2
+    exit 1
+  fi
+done
+
+LOCATION_INDEPENDENT_MAKE_PLAN="$ROOT_DIR/docs/plans/2026-06-14-location-independent-make.md"
+for evidence in \
+  'unrelated directory' \
+  'digest-pinned Python 2.7.18 container' \
+  'hostile mutations rejected' \
+  '`git diff --check`'; do
+  if ! grep -Fq "$evidence" "$LOCATION_INDEPENDENT_MAKE_PLAN"; then
+    printf '%s\n' "Location-independent Make plan must preserve verification evidence: $evidence" >&2
     exit 1
   fi
 done
