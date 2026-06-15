@@ -10,6 +10,7 @@ import urllib
 import json
 import base64
 import time
+import copy
 
 
 class MixpanelError(Exception):
@@ -141,6 +142,7 @@ class EventTracker(object):
     event = validate_event(event)
     validate_callback(callback)
     properties = prepare_properties(properties)
+    properties = copy.deepcopy(properties)
     validate_json_properties(event, properties)
 
     from threading import Thread

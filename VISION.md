@@ -34,6 +34,7 @@ Priority:
 - Avoid mutating caller-provided event properties during payload enrichment
 - Reject invalid callbacks before requests or async worker threads start
 - Reject JSON-incompatible async properties before worker threads start
+- Detach nested async properties before worker threads start
 - Keep request failure behavior visible to callers and covered by mocks
 - Keep request timeouts explicit
 - Close Mixpanel HTTP responses after successful and failed reads

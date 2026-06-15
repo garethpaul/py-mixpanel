@@ -36,10 +36,83 @@ for path in \
   "docs/plans/2026-06-13-async-json-preflight.md" \
   "docs/plans/2026-06-14-location-independent-make.md" \
   "docs/plans/2026-06-14-callback-token-isolation.md" \
+  "docs/plans/2026-06-15-async-nested-property-snapshot.md" \
   ".github/workflows/check.yml" \
   "scripts/check-baseline.sh"; do
   require_file "$path"
 done
+
+if ! grep -Fq 'import copy' "$ROOT_DIR/mixpanel.py" || \
+   ! grep -Fq '    properties = copy.deepcopy(properties)' "$ROOT_DIR/mixpanel.py"; then
+  printf '%s\n' "mixpanel.py must recursively snapshot async properties." >&2
+  exit 1
+fi
+
+async_snapshot_line=$(grep -n '    properties = copy.deepcopy(properties)' "$ROOT_DIR/mixpanel.py" | cut -d: -f1)
+async_json_line=$(grep -n '    validate_json_properties(event, properties)' "$ROOT_DIR/mixpanel.py" | cut -d: -f1)
+thread_import_line=$(grep -n '    from threading import Thread' "$ROOT_DIR/mixpanel.py" | cut -d: -f1)
+if [ -z "$async_snapshot_line" ] || [ -z "$async_json_line" ] || \
+   [ -z "$thread_import_line" ] || \
+   [ "$async_snapshot_line" -ge "$async_json_line" ] || \
+   [ "$async_json_line" -ge "$thread_import_line" ]; then
+  printf '%s\n' "Async nested properties must be snapshotted before JSON preflight and worker construction." >&2
+  exit 1
+fi
+
+snapshot_test=$(sed -n '/^    def test_track_async_snapshots_nested_properties_before_worker/,/^    def /p' "$ROOT_DIR/test_mixpanel.py")
+for snapshot_contract in \
+  'class DeferredThread(object):' \
+  'def run(self):' \
+  'properties["profile"]["plan"] = "enterprise"' \
+  'properties["profile"]["tags"].append("caller-mutation")' \
+  '"plan": "free"' \
+  '"tags": ["initial"]' \
+  '"tags": ["initial", "caller-mutation"]'; do
+  if ! grep -Fq "$snapshot_contract" "$ROOT_DIR/test_mixpanel.py"; then
+    printf '%s\n' "Async nested snapshot tests must preserve $snapshot_contract." >&2
+    exit 1
+  fi
+done
+for executable_contract in \
+  '            worker = tracker.track_async(' \
+  '            worker.run()' \
+  '        self.assertEqual(1, len(DeferredThread.created))' \
+  '        }, payload["properties"]["profile"])' \
+  '        ], callbacks)'; do
+  if ! printf '%s\n' "$snapshot_test" | grep -Fqx "$executable_contract"; then
+    printf '%s\n' "Async nested snapshot regression must preserve executable line: $executable_contract" >&2
+    exit 1
+  fi
+done
+
+ASYNC_SNAPSHOT_PLAN="$ROOT_DIR/docs/plans/2026-06-15-async-nested-property-snapshot.md"
+for evidence in \
+  'Status: Completed' \
+  '26 Python 2.7 tests passed' \
+  'absolute Makefile' \
+  'digest-pinned Python 2.7.18' \
+  'hostile mutations were rejected' \
+  'git diff --check'; do
+  if ! grep -Fq "$evidence" "$ASYNC_SNAPSHOT_PLAN"; then
+    printf '%s\n' "Async nested snapshot plan must preserve completed evidence: $evidence" >&2
+    exit 1
+  fi
+done
+for copy_failure_contract in \
+  'class UncopyableValue(object):' \
+  'def __deepcopy__(self, memo):' \
+  'test_track_async_rejects_copy_failures_before_thread' \
+  '"copy failures must not create a worker"' \
+  '"copy failures must not open a request"'; do
+  if ! grep -Fq "$copy_failure_contract" "$ROOT_DIR/test_mixpanel.py"; then
+    printf '%s\n' "Async snapshot tests must preserve copy-failure contract $copy_failure_contract." >&2
+    exit 1
+  fi
+done
+if grep -Eiq 'Status:[[:space:]]+Planned|pending|in[[:space:]]+progress' "$ASYNC_SNAPSHOT_PLAN"; then
+  printf '%s\n' "Async nested snapshot plan must not retain provisional status." >&2
+  exit 1
+fi
 
 if ! grep -Fq '    callback_properties = properties.copy()' "$ROOT_DIR/mixpanel.py" || \
    ! grep -Fq '      callback(event, callback_properties)' "$ROOT_DIR/mixpanel.py"; then

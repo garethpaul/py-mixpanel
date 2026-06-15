@@ -5,6 +5,8 @@
 - Returned credential-free callback properties for synchronous and
   asynchronous success callbacks while retaining the configured project token
   and generated timestamp in outbound Mixpanel payloads.
+- Detached nested async properties before worker construction so later caller
+  mutations cannot alter the payload or callback snapshot.
 
 ## 2026-06-13
 

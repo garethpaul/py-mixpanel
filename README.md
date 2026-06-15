@@ -77,6 +77,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   `ValueError` before a worker thread is constructed or a request is opened.
 - JSON-incompatible async properties raise `TypeError` before a worker thread
   is constructed or a request is opened.
+- Nested async properties are detached before worker construction, so later
+  caller mutations cannot change the submitted payload or callback snapshot.
 
 ## Testing and Verification
 

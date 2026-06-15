@@ -43,6 +43,27 @@ class FakeThread(object):
         self.target(**self.kwargs)
 
 
+class DeferredThread(object):
+    created = []
+
+    def __init__(self, target=None, kwargs=None):
+        self.target = target
+        self.kwargs = kwargs or {}
+        self.started = False
+        self.__class__.created.append(self)
+
+    def start(self):
+        self.started = True
+
+    def run(self):
+        self.target(**self.kwargs)
+
+
+class UncopyableValue(object):
+    def __deepcopy__(self, memo):
+        raise RuntimeError("nested copy failed")
+
+
 class EventTrackerTest(unittest.TestCase):
     def setUp(self):
         self.urls = []
@@ -433,6 +454,47 @@ class EventTrackerTest(unittest.TestCase):
         parsed, query, payload = self.payload_from_url(self.urls[0])
         self.assertEqual("project-token", payload["properties"]["token"])
 
+    def test_track_async_snapshots_nested_properties_before_worker(self):
+        callbacks = []
+        tracker = mixpanel.EventTracker("project-token")
+        properties = {
+            "distinct_id": "user-10",
+            "profile": {"plan": "free", "tags": ["initial"]},
+        }
+        original_thread = threading.Thread
+        DeferredThread.created = []
+        threading.Thread = DeferredThread
+
+        try:
+            worker = tracker.track_async(
+                "Async Snapshot",
+                properties,
+                lambda event, values: callbacks.append((event, values)),
+            )
+            properties["profile"]["plan"] = "enterprise"
+            properties["profile"]["tags"].append("caller-mutation")
+            worker.run()
+        finally:
+            threading.Thread = original_thread
+
+        self.assertEqual(1, len(DeferredThread.created))
+        self.assertTrue(worker.started)
+        parsed, query, payload = self.payload_from_url(self.urls[0])
+        self.assertEqual({
+            "plan": "free",
+            "tags": ["initial"],
+        }, payload["properties"]["profile"])
+        self.assertEqual([
+            ("Async Snapshot", {
+                "distinct_id": "user-10",
+                "profile": {"plan": "free", "tags": ["initial"]},
+            }),
+        ], callbacks)
+        self.assertEqual({
+            "plan": "enterprise",
+            "tags": ["initial", "caller-mutation"],
+        }, properties["profile"])
+
     def test_track_async_requires_callable_callback_before_thread(self):
         tracker = mixpanel.EventTracker("project-token")
         original_thread = threading.Thread
@@ -501,6 +563,32 @@ class EventTrackerTest(unittest.TestCase):
             [],
             self.urls,
             "unserializable properties must not open a request",
+        )
+
+    def test_track_async_rejects_copy_failures_before_thread(self):
+        tracker = mixpanel.EventTracker("project-token")
+        original_thread = threading.Thread
+        FakeThread.created = []
+        threading.Thread = FakeThread
+
+        try:
+            with self.assertRaisesRegexp(RuntimeError, "nested copy failed"):
+                tracker.track_async(
+                    "Async Event",
+                    {"distinct_id": "user-3", "nested": UncopyableValue()},
+                )
+        finally:
+            threading.Thread = original_thread
+
+        self.assertEqual(
+            [],
+            FakeThread.created,
+            "copy failures must not create a worker",
+        )
+        self.assertEqual(
+            [],
+            self.urls,
+            "copy failures must not open a request",
         )
 
 

@@ -1,6 +1,6 @@
 # Snapshot Nested Async Properties
 
-Status: Planned
+Status: Completed
 
 ## Context
 
@@ -61,18 +61,20 @@ snapshot before worker construction.
   bypass the deferred worker, weaken payload or callback assertions, or restore
   provisional plan language.
 
-## Verification Plan
+## Verification Results
 
-- Run the focused Python 2 unittest suite and shell syntax checks.
-- Run `make check` from the repository root and through the absolute Makefile
-  path from an unrelated directory.
-- Run the complete gate in the digest-pinned Python 2.7.18 hosted image with
-  networking disabled and the repository mounted read-only.
-- Run isolated hostile mutations for implementation order, worker deferral,
-  nested caller mutation, payload and callback assertions, documentation, and
-  plan evidence.
-- Audit the exact diff, bytecode and generated artifacts, added credential
-  patterns, conflict markers, dependency and workflow drift before commit.
+- 26 Python 2.7 tests passed, including the deferred-worker nested mutation,
+  synchronous copy-failure regression, and all existing request, callback,
+  credential, and response boundaries.
+- Root and absolute Makefile `make check` passed from the repository and an
+  unrelated caller directory.
+- The complete gate passed in the network-disabled, read-only,
+  digest-pinned Python 2.7.18 hosted image.
+- Twelve isolated hostile mutations were rejected across snapshot presence and
+  depth, ordering, worker deferral, caller mutation, payload and callback
+  assertions, documentation, and completed plan evidence.
+- Final generated-artifact, added-credential, conflict-marker, dependency,
+  workflow, protected-path, and `git diff --check` audits passed.
 
 ## Risks
 

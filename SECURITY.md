@@ -61,6 +61,8 @@ Invalid asynchronous event names, property containers, and distinct IDs are
 also rejected before a worker is created or any network request is opened.
 JSON-incompatible async properties are rejected before a worker is created or
 any network request is opened.
+Nested async properties are detached before worker construction so caller-side
+mutations cannot race with payload serialization or callback delivery.
 
 Opened Mixpanel HTTP responses should be closed after successful and failed
 reads so repeated analytics submission cannot exhaust local network resources.
