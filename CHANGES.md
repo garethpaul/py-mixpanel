@@ -1,5 +1,10 @@
 # Changes
 
+## 2026-06-16
+
+- Rejected `NaN`, positive infinity, and negative infinity during synchronous
+  serialization and asynchronous JSON preflight before requests or workers.
+
 ## 2026-06-14
 
 - Returned credential-free callback properties for synchronous and

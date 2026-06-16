@@ -49,7 +49,7 @@ def prepare_properties(properties):
 
 
 def validate_json_properties(event, properties):
-  json.dumps({"event": event, "properties": properties})
+  json.dumps({"event": event, "properties": properties}, allow_nan=False)
 
 
 def validate_mixpanel_response(response_body):
@@ -110,7 +110,7 @@ class EventTracker(object):
       properties['time'] = int(time.time())
 
     params = {"event": event, "properties": properties}
-    data = urllib.quote(base64.b64encode(json.dumps(params)), safe='')
+    data = urllib.quote(base64.b64encode(json.dumps(params, allow_nan=False)), safe='')
     if self.api_key:
       resp = open_mixpanel_url(ARCHIVE_BASE_URL % (data, urllib.quote(self.api_key, safe='')))
     else:

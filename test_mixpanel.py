@@ -214,6 +214,23 @@ class EventTrackerTest(unittest.TestCase):
 
         self.assertEqual([], self.urls)
 
+    def test_track_rejects_non_finite_properties_before_request(self):
+        tracker = mixpanel.EventTracker("project-token")
+        callbacks = []
+
+        for value in (float("nan"), float("inf"), float("-inf")):
+            properties = {"distinct_id": "user-1", "measurement": value}
+            with self.assertRaises(ValueError):
+                tracker.track(
+                    "Invalid Measurement",
+                    properties,
+                    lambda event, values: callbacks.append((event, values)),
+                )
+            self.assertIs(properties["measurement"], value)
+
+        self.assertEqual([], self.urls)
+        self.assertEqual([], callbacks)
+
     def test_track_requires_properties_dict(self):
         tracker = mixpanel.EventTracker("project-token")
 
@@ -564,6 +581,36 @@ class EventTrackerTest(unittest.TestCase):
             self.urls,
             "unserializable properties must not open a request",
         )
+
+    def test_track_async_rejects_non_finite_properties_before_thread(self):
+        tracker = mixpanel.EventTracker("project-token")
+        original_thread = threading.Thread
+        FakeThread.created = []
+        callbacks = []
+        threading.Thread = FakeThread
+
+        try:
+            for value in (float("nan"), float("inf"), float("-inf")):
+                with self.assertRaises(ValueError):
+                    tracker.track_async(
+                        "Invalid Async Measurement",
+                        {"distinct_id": "user-3", "measurement": value},
+                        lambda event, values: callbacks.append((event, values)),
+                    )
+        finally:
+            threading.Thread = original_thread
+
+        self.assertEqual(
+            [],
+            FakeThread.created,
+            "non-finite properties must not create a worker",
+        )
+        self.assertEqual(
+            [],
+            self.urls,
+            "non-finite properties must not open a request",
+        )
+        self.assertEqual([], callbacks)
 
     def test_track_async_rejects_copy_failures_before_thread(self):
         tracker = mixpanel.EventTracker("project-token")

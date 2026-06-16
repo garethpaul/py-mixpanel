@@ -79,6 +79,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   is constructed or a request is opened.
 - Nested async properties are detached before worker construction, so later
   caller mutations cannot change the submitted payload or callback snapshot.
+- Synchronous serialization and async preflight reject `NaN`, positive
+  infinity, and negative infinity before a request or worker is created.
 
 ## Testing and Verification
 

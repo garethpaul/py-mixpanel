@@ -37,9 +37,54 @@ for path in \
   "docs/plans/2026-06-14-location-independent-make.md" \
   "docs/plans/2026-06-14-callback-token-isolation.md" \
   "docs/plans/2026-06-15-async-nested-property-snapshot.md" \
+  "docs/plans/2026-06-16-finite-json-properties.md" \
   ".github/workflows/check.yml" \
   "scripts/check-baseline.sh"; do
   require_file "$path"
+done
+
+if [ "$(grep -Fc 'allow_nan=False' "$ROOT_DIR/mixpanel.py")" -ne 2 ]; then
+  printf '%s\n' "Sync serialization and async preflight must both reject non-finite JSON numbers." >&2
+  exit 1
+fi
+
+sync_finite_json_test=$(sed -n '/^    def test_track_rejects_non_finite_properties_before_request/,/^    def /p' "$ROOT_DIR/test_mixpanel.py")
+for sync_finite_json_contract in \
+  'float("nan"), float("inf"), float("-inf")' \
+  '            with self.assertRaises(ValueError):' \
+  '        self.assertEqual([], self.urls)' \
+  'self.assertEqual([], callbacks)'; do
+  if ! printf '%s\n' "$sync_finite_json_test" | grep -Fq "$sync_finite_json_contract"; then
+    printf '%s\n' "Synchronous finite JSON regression must preserve $sync_finite_json_contract." >&2
+    exit 1
+  fi
+done
+
+async_finite_json_test=$(sed -n '/^    def test_track_async_rejects_non_finite_properties_before_thread/,/^    def /p' "$ROOT_DIR/test_mixpanel.py")
+for async_finite_json_contract in \
+  'float("nan"), float("inf"), float("-inf")' \
+  '                with self.assertRaises(ValueError):' \
+  '"non-finite properties must not create a worker"' \
+  '"non-finite properties must not open a request"' \
+  '        self.assertEqual([], callbacks)'; do
+  if ! printf '%s\n' "$async_finite_json_test" | grep -Fq "$async_finite_json_contract"; then
+    printf '%s\n' "Async finite JSON regression must preserve $async_finite_json_contract." >&2
+    exit 1
+  fi
+done
+
+FINITE_JSON_PLAN="$ROOT_DIR/docs/plans/2026-06-16-finite-json-properties.md"
+for finite_json_evidence in \
+  'Status: Completed' \
+  '28 Python 2.7 tests passed' \
+  'absolute Makefile' \
+  'digest-pinned Python 2.7' \
+  'hostile mutations were rejected' \
+  'git diff --check'; do
+  if ! grep -Fq "$finite_json_evidence" "$FINITE_JSON_PLAN"; then
+    printf '%s\n' "Finite JSON plan must preserve completed evidence: $finite_json_evidence" >&2
+    exit 1
+  fi
 done
 
 if ! grep -Fq 'import copy' "$ROOT_DIR/mixpanel.py" || \
@@ -140,7 +185,7 @@ for callback_contract in \
 done
 
 if ! grep -Fq 'def validate_json_properties(event, properties):' "$ROOT_DIR/mixpanel.py" || \
-   ! grep -Fq 'json.dumps({"event": event, "properties": properties})' "$ROOT_DIR/mixpanel.py"; then
+   ! grep -Fq 'json.dumps({"event": event, "properties": properties}, allow_nan=False)' "$ROOT_DIR/mixpanel.py"; then
   printf '%s\n' "mixpanel.py must preserve JSON serialization preflight for async properties." >&2
   exit 1
 fi

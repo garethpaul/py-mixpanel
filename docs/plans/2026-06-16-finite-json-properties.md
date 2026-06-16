@@ -1,6 +1,6 @@
 # Require Finite JSON Properties
 
-Status: Planned
+Status: Completed
 
 ## Context
 
@@ -55,3 +55,29 @@ payloads to reach worker construction or network access.
 - Callers that previously relied on Python's non-standard `NaN` or infinity
   output will now receive a synchronous `ValueError`, which is the intended
   fail-fast behavior for invalid JSON.
+
+## Work Completed
+
+- Configured both asynchronous preflight and final payload serialization to
+  reject non-finite floating-point values through `allow_nan=False`.
+- Added synchronous and asynchronous regressions for `NaN`, positive infinity,
+  and negative infinity.
+- Proved failures occur before requests, callbacks, worker construction, or
+  mutation of caller-owned properties.
+- Added scoped static contracts for the strict encoder sites, executable
+  evidence, documentation, changelog, and completed plan.
+
+## Verification Results
+
+- All 28 Python 2.7 tests passed, including all six sync/async non-finite value
+  cases and the existing snapshot, credential, response, and callback suite.
+- Root and absolute Makefile `make check` passed from the repository and an
+  unrelated caller directory.
+- The complete gate passed in the network-disabled, read-only,
+  digest-pinned Python 2.7.18 hosted image.
+- All hostile mutations were rejected, including removal of strict encoding
+  from either call site, weakened finite variants or scoped
+  no-request/no-worker/no-callback assertions, and reverted completed evidence.
+- Final `git diff --check`, bytecode, temporary-artifact, credential, conflict,
+  dependency, workflow, mode, binary, and large-file audits passed without
+  unrelated changes.
