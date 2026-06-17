@@ -1,6 +1,6 @@
 # Dict-Subclass Property Isolation
 
-Status: Planned
+Status: Completed
 
 ## Context
 
@@ -95,3 +95,27 @@ Approach:
   subclasses.
 - The fix must not weaken the later recursive async snapshot or strict JSON
   preflight ordering.
+
+## Work Completed
+
+- Canonicalized accepted top-level property mappings with the built-in dict
+  constructor instead of dispatching an overridable `copy()` method.
+- Added synchronous and asynchronous regressions using a dict subclass whose
+  `copy()` returns itself.
+- Proved original caller mappings and callback payloads remain token/time-free
+  while outbound events retain the configured project token and generated time.
+- Added scoped source, fixture, sync, async, guidance, and completed-plan
+  contracts.
+
+## Verification Results
+
+- Python 2.7 passed the focused subclass-isolation tests and all 30 mocked
+  request, response, serialization, callback, and asynchronous tests.
+- `sh -n` and `dash -n` accepted the updated baseline checker.
+- A complete isolated `make check` passed before the plan was marked completed.
+- Repository-root `make check` and the absolute-Makefile gate from `/tmp` passed
+  Python 2.7 compilation, all tests, completed plans, and baseline contracts.
+- Ten isolated hostile mutations were rejected across virtual copy dispatch,
+  the adversarial fixture, sync and async regression execution, caller
+  isolation, callback token exclusion, configured token authority, README
+  guidance, and completed plan status.

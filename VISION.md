@@ -32,6 +32,7 @@ Priority:
 - Keep a scriptable baseline guard for required files and local metadata
 - Reject events without caller-provided `distinct_id` before any request
 - Avoid mutating caller-provided event properties during payload enrichment
+- Preserve dict-subclass property isolation before payload enrichment
 - Reject invalid callbacks before requests or async worker threads start
 - Reject JSON-incompatible async properties before worker threads start
 - Reject non-finite numeric properties before requests or worker threads start

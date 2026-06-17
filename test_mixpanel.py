@@ -64,6 +64,11 @@ class UncopyableValue(object):
         raise RuntimeError("nested copy failed")
 
 
+class SelfCopyingDict(dict):
+    def copy(self):
+        return self
+
+
 class EventTrackerTest(unittest.TestCase):
     def setUp(self):
         self.urls = []
@@ -310,6 +315,33 @@ class EventTrackerTest(unittest.TestCase):
         self.assertEqual(1234567890, payload["properties"]["time"])
         self.assertEqual("free", payload["properties"]["plan"])
 
+    def test_track_isolates_self_copying_dict_subclass(self):
+        callbacks = []
+        tracker = mixpanel.EventTracker("project-token")
+        properties = SelfCopyingDict(distinct_id="user-subclass", plan="free")
+
+        tracker.track(
+            "Subclass Isolation",
+            properties,
+            lambda event, values: callbacks.append((event, dict(values))),
+        )
+
+        self.assertEqual({
+            "distinct_id": "user-subclass",
+            "plan": "free",
+        }, properties)
+        parsed, query, payload = self.payload_from_url(self.urls[0])
+        self.assertEqual("project-token", payload["properties"]["token"])
+        self.assertEqual(1234567890, payload["properties"]["time"])
+        self.assertEqual([
+            ("Subclass Isolation", {
+                "distinct_id": "user-subclass",
+                "plan": "free",
+            }),
+        ], callbacks)
+        self.assertNotIn("token", callbacks[0][1])
+        self.assertNotIn("time", callbacks[0][1])
+
     def test_track_uses_configured_token_over_caller_property(self):
         callbacks = []
         tracker = mixpanel.EventTracker("project-token")
@@ -446,6 +478,40 @@ class EventTrackerTest(unittest.TestCase):
         self.assertEqual([
             ("Async Credential Isolation", {
                 "distinct_id": "user-9",
+                "plan": "paid",
+            }),
+        ], callbacks)
+        self.assertNotIn("token", callbacks[0][1])
+        self.assertNotIn("time", callbacks[0][1])
+
+    def test_track_async_isolates_self_copying_dict_subclass(self):
+        callbacks = []
+        tracker = mixpanel.EventTracker("project-token")
+        properties = SelfCopyingDict(distinct_id="async-subclass", plan="paid")
+        original_thread = threading.Thread
+        FakeThread.created = []
+        threading.Thread = FakeThread
+
+        try:
+            tracker.track_async(
+                "Async Subclass Isolation",
+                properties,
+                lambda event, values: callbacks.append((event, dict(values))),
+            )
+        finally:
+            threading.Thread = original_thread
+
+        self.assertEqual({
+            "distinct_id": "async-subclass",
+            "plan": "paid",
+        }, properties)
+        self.assertEqual(1, len(FakeThread.created))
+        parsed, query, payload = self.payload_from_url(self.urls[0])
+        self.assertEqual("project-token", payload["properties"]["token"])
+        self.assertEqual(1234567890, payload["properties"]["time"])
+        self.assertEqual([
+            ("Async Subclass Isolation", {
+                "distinct_id": "async-subclass",
                 "plan": "paid",
             }),
         ], callbacks)

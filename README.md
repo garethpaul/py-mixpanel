@@ -126,6 +126,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - Successful synchronous and asynchronous callbacks receive
   credential-free callback properties captured before the configured project
   token and any generated timestamp are added to the outbound payload.
+- Dict-subclass property isolation canonicalizes the top-level mapping without
+  virtual `copy()` dispatch, so caller data and callbacks remain token/time-free.
 
 ## Maintenance Notes
 

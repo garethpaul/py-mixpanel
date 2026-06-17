@@ -316,6 +316,62 @@ if ! grep -Fq "callable(callback)" "$ROOT_DIR/mixpanel.py"; then
   exit 1
 fi
 
+prepare_properties_source=$(sed -n '/^def prepare_properties(/,/^$/p' "$ROOT_DIR/mixpanel.py")
+if ! printf '%s\n' "$prepare_properties_source" | grep -Fq 'properties = dict(properties)' ||
+   printf '%s\n' "$prepare_properties_source" | grep -Fq 'properties.copy()'; then
+  printf '%s\n' "prepare_properties must canonicalize accepted mappings without virtual copy dispatch." >&2
+  exit 1
+fi
+
+subclass_fixture=$(sed -n '/^class SelfCopyingDict(dict):/,/^$/p' "$ROOT_DIR/test_mixpanel.py")
+for subclass_contract in "class SelfCopyingDict(dict):" "return self"; do
+  if ! printf '%s\n' "$subclass_fixture" | grep -Fq "$subclass_contract"; then
+    printf '%s\n' "Dict-subclass fixture must preserve $subclass_contract." >&2
+    exit 1
+  fi
+done
+
+sync_subclass_test=$(sed -n '/^    def test_track_isolates_self_copying_dict_subclass(/,/^    def /p' "$ROOT_DIR/test_mixpanel.py")
+for sync_subclass_contract in \
+  '"distinct_id": "user-subclass"' \
+  '}, properties)' \
+  'self.assertEqual("project-token", payload["properties"]["token"])' \
+  'self.assertNotIn("token", callbacks[0][1])' \
+  'self.assertNotIn("time", callbacks[0][1])'; do
+  if ! printf '%s\n' "$sync_subclass_test" | grep -Fq "$sync_subclass_contract"; then
+    printf '%s\n' "Synchronous dict-subclass regression must preserve $sync_subclass_contract." >&2
+    exit 1
+  fi
+done
+
+async_subclass_test=$(sed -n '/^    def test_track_async_isolates_self_copying_dict_subclass(/,/^    def /p' "$ROOT_DIR/test_mixpanel.py")
+for async_subclass_contract in \
+  '"distinct_id": "async-subclass"' \
+  '}, properties)' \
+  'self.assertEqual(1, len(FakeThread.created))' \
+  'self.assertEqual("project-token", payload["properties"]["token"])' \
+  'self.assertNotIn("token", callbacks[0][1])' \
+  'self.assertNotIn("time", callbacks[0][1])'; do
+  if ! printf '%s\n' "$async_subclass_test" | grep -Fq "$async_subclass_contract"; then
+    printf '%s\n' "Asynchronous dict-subclass regression must preserve $async_subclass_contract." >&2
+    exit 1
+  fi
+done
+
+for document in "$README" "$ROOT_DIR/SECURITY.md" "$ROOT_DIR/VISION.md" "$ROOT_DIR/CHANGES.md"; do
+  if ! grep -Fiq "dict-subclass property isolation" "$document"; then
+    printf '%s\n' "$document must document dict-subclass property isolation." >&2
+    exit 1
+  fi
+done
+
+DICT_SUBCLASS_PLAN="$DOCS_PLANS/2026-06-17-dict-subclass-property-isolation.md"
+if ! grep -Fq "Status: Completed" "$DICT_SUBCLASS_PLAN" ||
+   ! grep -Fq "make check" "$DICT_SUBCLASS_PLAN"; then
+  printf '%s\n' "Dict-subclass property isolation plan must record completed verification." >&2
+  exit 1
+fi
+
 if [ "$(grep -Fc 'event = validate_event(event)' "$ROOT_DIR/mixpanel.py")" -ne 2 ] || \
    [ "$(grep -Fc 'properties = prepare_properties(properties)' "$ROOT_DIR/mixpanel.py")" -ne 2 ]; then
   printf '%s\n' "track and track_async must share event and property preflight validation." >&2

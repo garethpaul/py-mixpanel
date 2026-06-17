@@ -1,5 +1,10 @@
 # Changes
 
+## 2026-06-17
+
+- Added dict-subclass property isolation so overridable `copy()` methods cannot
+  alias project tokens or generated timestamps into caller or callback data.
+
 ## 2026-06-16
 
 - Rejected `NaN`, positive infinity, and negative infinity during synchronous

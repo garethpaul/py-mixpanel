@@ -48,6 +48,10 @@ success callback or exposing the upstream body.
 
 Event property dictionaries can contain user identifiers and behavior data. The tracker copies caller-provided properties before adding Mixpanel defaults so application-owned data is not mutated during validation or submission.
 
+Dict-subclass property isolation converts the top-level mapping to a built-in
+dict instead of trusting an overridable `copy()` method, preventing transport
+credentials and timestamps from aliasing into caller or callback data.
+
 The configured project token remains authoritative after that copy; a caller
 property cannot redirect submission to a different Mixpanel project.
 Successful callbacks receive credential-free callback properties captured
