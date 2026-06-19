@@ -33,16 +33,20 @@ Priority:
 - Reject events without caller-provided `distinct_id` before any request
 - Avoid mutating caller-provided event properties during payload enrichment
 - Preserve dict-subclass property isolation before payload enrichment
+- Canonicalize nested JSON containers without overridable subclass dispatch
 - Reject invalid callbacks before requests or async worker threads start
 - Reject JSON-incompatible async properties before worker threads start
 - Reject non-finite numeric properties before requests or worker threads start
 - Detach nested async properties before worker threads start
-- Keep request failure behavior visible to callers and covered by mocks
+- Snapshot the configured project token and API key before async worker launch
+- Keep request failure behavior stable, detail-safe, and covered by mocks
 - Keep request timeouts explicit
 - Close Mixpanel HTTP responses after successful and failed reads
+- Preserve primary failures when response cleanup also fails
+- Reject non-success HTTP statuses before acknowledgements or callbacks
 - Validate Mixpanel response acknowledgements before success callbacks run
 - Preserve bounded response reads before acknowledgement validation
-- Treat `urllib2` and Python 2 idioms as legacy constraints
+- Preserve Python 2.7 compatibility while verifying current Python 3 runtimes
 - Keep legacy verification from leaving Python bytecode in the repository tree
 - Run the complete legacy gate in digest-pinned hosted Python 2.7 without
   skipping mocked request or callback coverage
@@ -52,7 +56,6 @@ Priority:
 
 Next priorities:
 
-- Return or expose request errors instead of swallowing response details
 - Document Python version and Mixpanel API assumptions
 - Add deeper guidance for user consent and distinct ID handling
 
@@ -82,3 +85,8 @@ background event submission that callers did not request.
 
 This list is a roadmap guardrail, not a permanent rule.
 Strong user demand and strong technical rationale can change it.
+
+There is no live Mixpanel request in automated verification. The configured
+project token remains authoritative, successful calls receive a
+credential-free callback snapshot, and bounded response handling remains
+mandatory across runtimes.

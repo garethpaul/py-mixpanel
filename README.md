@@ -34,7 +34,7 @@ Additional scan context:
 ### Prerequisites
 
 - Git
-- Python 2.7 and `make`
+- Python 2.7 or a supported Python 3 runtime and `make`
 
 ### Setup
 
@@ -79,6 +79,13 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   is constructed or a request is opened.
 - Nested async properties are detached before worker construction, so later
   caller mutations cannot change the submitted payload or callback snapshot.
+- Nested built-in and subclassed dictionaries, lists, and tuples are copied to
+  a plain JSON tree without dispatching overridable container methods. Cycles
+  and unsupported objects fail before network or worker activity.
+- Async workers snapshot the configured project token and optional API key
+  before launch, so later tracker mutation cannot redirect queued events.
+- Transport, HTTP-status, read, and cleanup failures raise a stable error
+  without returning credential-bearing URLs or upstream details.
 - Synchronous serialization and async preflight reject `NaN`, positive
   infinity, and negative infinity before a request or worker is created.
 
@@ -88,7 +95,9 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 - Run `make build` for the static legacy verification gate; it uses the same
   mocked Python 2 tests as `make test`.
 - Run `scripts/check-baseline.sh` for the SDK-free repository baseline guard.
-- `make check` delegates to `make verify`, which compile-checks the legacy Python 2 files, runs mocked HTTP tests for tracking, import URLs, request validation, request timeouts, request-error behavior, bounded response reads, caller-property isolation, and async callback behavior, and verifies completed plans under `docs/plans`.
+- `make check` compile-checks the selected Python runtime, runs mocked HTTP
+  tests, rejects hostile source mutations, and verifies completed plans. Use
+  `make PYTHON=python3 check` for Python 3 locally.
 - The baseline script checks required files, completed docs-plan metadata,
   verification documentation, and local secret/editor metadata hygiene.
 - The baseline script also rejects local `.pyc` files and `__pycache__`
@@ -97,9 +106,13 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   provided, event names, properties dictionaries, and nonblank caller-provided
   distinct IDs.
 - GitHub Actions runs the complete gate on pushes, pull requests, and manual
-  dispatches in the official Python 2.7.18 image pinned by digest. The workflow
-  uses read-only repository permissions and credential-free checkout, and the
-  baseline fails if Git cannot inspect tracked secret or editor metadata.
+  dispatches in the official Python 2.7.18 image pinned by digest and on clean
+  Python 3.11 and 3.14 runners. The workflow uses read-only repository
+  permissions and credential-free checkout.
+
+All automated HTTP behavior is fake. There is no live Mixpanel request in the
+verification suite, so provider authentication, schema, availability, and
+production delivery remain unverified.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
@@ -128,6 +141,10 @@ When the required SDK or runtime is unavailable, use static checks and source re
   token and any generated timestamp are added to the outbound payload.
 - Dict-subclass property isolation canonicalizes the top-level mapping without
   virtual `copy()` dispatch, so caller data and callbacks remain token/time-free.
+- The configured project token is captured before async worker launch, and
+  successful calls receive an independent credential-free callback snapshot.
+- Stable errors, HTTP status checks, and bounded response cleanup prevent
+  provider or credential details from escaping through exceptions.
 
 ## Maintenance Notes
 
@@ -173,6 +190,9 @@ When the required SDK or runtime is unavailable, use static checks and source re
   of JSON-incompatible async properties before worker creation.
 - See `docs/plans/2026-06-14-callback-token-isolation.md` for the callback
   credential-isolation boundary.
+- See `docs/plans/2026-06-19-async-transport-boundary-review.md` for deep JSON
+  snapshots, async credential ownership, transport cleanup, Python 2/3
+  verification, and hostile mutations.
 
 ## Contributing
 

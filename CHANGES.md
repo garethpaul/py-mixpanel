@@ -1,5 +1,16 @@
 # Changes
 
+## 2026-06-19
+
+- Canonicalized nested JSON properties through built-in container operations,
+  rejecting cycles, hostile subclasses, unsupported objects, and non-finite
+  values before requests or async worker creation.
+- Snapshotted the configured project token and optional API key before async
+  launch while preserving an independent credential-free callback snapshot.
+- Added stable transport errors, HTTP status validation, primary-failure-safe
+  cleanup, bounded response handling, Python 2/3 gates, and seven hostile
+  mutations. There is no live Mixpanel request in automated verification.
+
 ## 2026-06-17
 
 - Added dict-subclass property isolation so overridable `copy()` methods cannot
