@@ -12,7 +12,7 @@ This README is based on the checked-in source, manifests, scripts, and repositor
 ## Repository Contents
 
 - `README.md` - project overview and local usage notes
-- `.github/workflows/check.yml` - pinned Python 2.7 hosted verification
+- `.github/workflows/check.yml` - pinned Python 2.7 hosted `make check` gate
 - `CHANGES.md` - notable maintenance changes
 - `Makefile` - local verification entry points
 - `docs/plans` - canonical completed maintenance plans
@@ -34,7 +34,7 @@ Additional scan context:
 ### Prerequisites
 
 - Git
-- Python 2.7 and `make`
+- Python 2.7 or a supported Python 3 runtime and `make`
 
 ### Setup
 
@@ -62,6 +62,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   HTTP request.
 - Caller-provided properties are copied before the tracker adds `token` or
   `time`, so validation and payload enrichment do not mutate application data.
+- The configured project token is authoritative for outbound payloads; a
+  caller property cannot redirect an event to another Mixpanel project.
 - Mixpanel HTTP requests use a ten-second timeout by default.
 - Opened Mixpanel HTTP responses are closed after reads succeed or fail so
   repeated tracking does not leak network resources.
@@ -71,6 +73,21 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 - Use `track_async` only when background submission is expected by the caller.
 - Callbacks must be callable when provided; invalid callbacks raise
   `ValueError` before HTTP requests or async worker threads are started.
+- Invalid async event names, property containers, and distinct IDs raise
+  `ValueError` before a worker thread is constructed or a request is opened.
+- JSON-incompatible async properties raise `TypeError` before a worker thread
+  is constructed or a request is opened.
+- Nested async properties are detached before worker construction, so later
+  caller mutations cannot change the submitted payload or callback snapshot.
+- Nested built-in and subclassed dictionaries, lists, and tuples are copied to
+  a plain JSON tree without dispatching overridable container methods. Cycles
+  and unsupported objects fail before network or worker activity.
+- Async workers snapshot the configured project token and optional API key
+  before launch, so later tracker mutation cannot redirect queued events.
+- Transport, HTTP-status, read, and cleanup failures raise a stable error
+  without returning credential-bearing URLs or upstream details.
+- Synchronous serialization and async preflight reject `NaN`, positive
+  infinity, and negative infinity before a request or worker is created.
 
 ## Testing and Verification
 
@@ -78,7 +95,9 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 - Run `make build` for the static legacy verification gate; it uses the same
   mocked Python 2 tests as `make test`.
 - Run `scripts/check-baseline.sh` for the SDK-free repository baseline guard.
-- `make check` delegates to `make verify`, which compile-checks the legacy Python 2 files, runs mocked HTTP tests for tracking, import URLs, request validation, request timeouts, request-error behavior, caller-property isolation, and async callback behavior, and verifies completed plans under `docs/plans`.
+- `make check` compile-checks the selected Python runtime, runs mocked HTTP
+  tests, rejects hostile source mutations, and verifies completed plans. Use
+  `make PYTHON=python3 check` for Python 3 locally.
 - The baseline script checks required files, completed docs-plan metadata,
   verification documentation, and local secret/editor metadata hygiene.
 - The baseline script also rejects local `.pyc` files and `__pycache__`
@@ -86,9 +105,14 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 - Request validation coverage includes nonblank project tokens, API keys when
   provided, event names, properties dictionaries, and nonblank caller-provided
   distinct IDs.
-- GitHub Actions runs the complete gate in the official Python 2.7.18 image,
-  pinned by digest, with read-only repository permissions. The baseline fails
-  if Git cannot inspect tracked secret or editor metadata.
+- GitHub Actions runs the complete gate on pushes, pull requests, and manual
+  dispatches in the official Python 2.7.18 image pinned by digest and on clean
+  Python 3.11 and 3.14 runners. The workflow uses read-only repository
+  permissions and credential-free checkout.
+
+All automated HTTP behavior is fake. There is no live Mixpanel request in the
+verification suite, so provider authentication, schema, availability, and
+production delivery remain unverified.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
@@ -112,6 +136,15 @@ When the required SDK or runtime is unavailable, use static checks and source re
   analytics payloads are encoded or sent.
 - Callback validation rejects non-callable callbacks before analytics payloads
   are sent or async worker threads are started.
+- Successful synchronous and asynchronous callbacks receive
+  credential-free callback properties captured before the configured project
+  token and any generated timestamp are added to the outbound payload.
+- Dict-subclass property isolation canonicalizes the top-level mapping without
+  virtual `copy()` dispatch, so caller data and callbacks remain token/time-free.
+- The configured project token is captured before async worker launch, and
+  successful calls receive an independent credential-free callback snapshot.
+- Stable errors, HTTP status checks, and bounded response cleanup prevent
+  provider or credential details from escaping through exceptions.
 
 ## Maintenance Notes
 
@@ -139,6 +172,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   repository baseline guard and local secret/editor metadata ignores.
 - See `docs/plans/2026-06-09-bytecode-free-verification.md` for the
   bytecode-free legacy verification guard.
+- See `docs/plans/2026-06-10-ci-baseline.md` for the integrated hosted CI
+  contract and workflow mutation coverage.
 - See `docs/plans/2026-06-10-callback-validation.md` for the callback
   validation guard.
 - See `docs/plans/2026-06-10-hosted-legacy-validation.md` for digest-pinned,
@@ -147,6 +182,17 @@ When the required SDK or runtime is unavailable, use static checks and source re
   response cleanup on successful and failed reads.
 - See `docs/plans/2026-06-12-response-acknowledgement-validation.md` for strict
   Mixpanel acceptance checks before callbacks.
+- See `docs/plans/2026-06-12-response-body-size-boundary.md` for bounded
+  response reads before acknowledgement validation.
+- See `docs/plans/2026-06-13-project-token-authority.md` for the configured
+  project token boundary on synchronous and asynchronous payloads.
+- See `docs/plans/2026-06-13-async-json-preflight.md` for synchronous rejection
+  of JSON-incompatible async properties before worker creation.
+- See `docs/plans/2026-06-14-callback-token-isolation.md` for the callback
+  credential-isolation boundary.
+- See `docs/plans/2026-06-19-async-transport-boundary-review.md` for deep JSON
+  snapshots, async credential ownership, transport cleanup, Python 2/3
+  verification, and hostile mutations.
 
 ## Contributing
 

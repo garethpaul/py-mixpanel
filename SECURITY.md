@@ -31,6 +31,7 @@ Helpful reports include:
 - Review found file, document, data, or media parsing flows; changes in those areas should receive security-focused review before merge.
 - Review found secret-like configuration names that require careful review before use; changes in those areas should receive security-focused review before merge.
 - No primary dependency manifest was detected in the repository root. If dependencies are added later, include a manifest and prefer reproducible installation instructions.
+- GitHub Actions runs the static `make check` baseline; review workflow, Makefile, and checker changes alongside analytics request behavior changes.
 
 ## Service and API Notes
 
@@ -47,12 +48,42 @@ success callback or exposing the upstream body.
 
 Event property dictionaries can contain user identifiers and behavior data. The tracker copies caller-provided properties before adding Mixpanel defaults so application-owned data is not mutated during validation or submission.
 
+Dict-subclass property isolation converts the top-level mapping to a built-in
+dict instead of trusting an overridable `copy()` method, preventing transport
+credentials and timestamps from aliasing into caller or callback data.
+
+The configured project token remains authoritative after that copy; a caller
+property cannot redirect submission to a different Mixpanel project.
+Successful callbacks receive credential-free callback properties captured
+before the configured project token and generated timestamp are added to the
+outbound request. Caller-supplied values remain available to the caller.
+
 Callbacks should be callable before submission starts. Invalid callbacks are
 rejected before analytics payloads are sent or async worker threads are
 started.
+Invalid asynchronous event names, property containers, and distinct IDs are
+also rejected before a worker is created or any network request is opened.
+JSON-incompatible async properties are rejected before a worker is created or
+any network request is opened.
+Nested async properties are detached before worker construction so caller-side
+mutations cannot race with payload serialization or callback delivery.
+
+Nested container subclasses are canonicalized through built-in dictionary,
+list, and tuple operations. Cycles and unsupported JSON values fail before any
+request or worker starts. Async workers snapshot the configured project token
+and optional import API key before launch, while successful calls receive an
+independent credential-free callback snapshot.
 
 Opened Mixpanel HTTP responses should be closed after successful and failed
 reads so repeated analytics submission cannot exhaust local network resources.
+The client also keeps bounded response reads in place before acknowledgement
+validation so an untrusted endpoint cannot force an arbitrarily large body into
+memory or reflect that content through an overflow error.
+
+Transport, HTTP-status, response-read, and response-close failures produce a
+stable error without exposing credential-bearing URLs or provider details.
+There is no live Mixpanel request in automated verification; credential-backed
+provider behavior and production delivery remain separately unverified.
 
 Hosted verification runs the full mocked request and callback gate in a
 digest-pinned Python 2.7.18 container with read-only repository permissions.
