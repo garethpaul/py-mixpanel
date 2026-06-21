@@ -79,7 +79,8 @@ for make_contract in \
   'ifneq ($(origin MAKEFILE_LIST),file)' \
   '$(error MAKEFILE_LIST must not be overridden)' \
   'override REPO_ROOT := $(shell path=' \
-  'path=$${path\# }' \
+  'sed_path=/usr/bin/sed' \
+  'sed_path=/bin/sed' \
   'export REPO_ROOT' \
   '/usr/bin/dirname' \
   '/bin/pwd -P' \
