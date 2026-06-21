@@ -30,7 +30,9 @@ for path in \
   mixpanel.py \
   test_mixpanel.py \
   scripts/check-baseline.sh \
+  scripts/test-makefile-root.sh \
   scripts/test-review-mutations.py \
+  docs/plans/2026-06-21-safe-make-root.md \
   docs/plans/2026-06-19-async-transport-boundary-review.md; do
   require_file "$path"
 done
@@ -69,11 +71,48 @@ for test_name in \
 done
 
 for make_contract in \
+  'override SHELL := /bin/sh' \
+  'override .SHELLFLAGS := -c' \
+  '$(error MAKEFILES must be empty; repository verification requires this Makefile to be loaded alone)' \
   'PYTHON ?= python2' \
+  '$(error PYTHON must be python or python2)' \
+  'ifneq ($(origin MAKEFILE_LIST),file)' \
+  '$(error MAKEFILE_LIST must not be overridden)' \
+  'override REPO_ROOT := $(shell path=' \
+  'sed_path=/usr/bin/sed' \
+  'sed_path=/bin/sed' \
+  'export REPO_ROOT' \
+  '/usr/bin/dirname' \
+  '/bin/pwd -P' \
   '$(PYTHON) -m unittest test_mixpanel' \
   '$(PYTHON) scripts/test-review-mutations.py' \
+  'scripts/test-makefile-root.sh' \
+  'verify: lint test build docs root-test' \
   'check: verify mutations'; do
   require_text Makefile "$make_contract"
+done
+
+for root_contract in \
+  'Py Mixpanel' \
+  '56 executed target/authority cases' \
+  'hostile backticks blocked' \
+  'dollar paths failed closed' \
+  '1 MAKEFILES preload rejection' \
+  '1 PYTHON rejection' \
+  '2 MAKEFILE_LIST rejection cases' \
+  'MAKEFILE_LIST must not be overridden'; do
+  require_text scripts/test-makefile-root.sh "$root_contract"
+done
+
+for root_evidence in \
+  'Status: Completed' \
+  'seven pre-existing public Make targets plus the root regression gate' \
+  '56 executed target and authority cases' \
+  'Hostile checkout backticks were blocked and dollar-substitution paths failed closed' \
+  '`MAKEFILES`, `SHELL`, `.SHELLFLAGS`, and invalid `PYTHON` authority were covered' \
+  'Command-line and environment `MAKEFILE_LIST` overrides failed closed' \
+  'make check'; do
+  require_text docs/plans/2026-06-21-safe-make-root.md "$root_evidence"
 done
 
 WORKFLOW=.github/workflows/check.yml
