@@ -1,5 +1,10 @@
 # Changes
 
+## 2026-06-21
+
+- Hardened all seven pre-existing Make gates against `MAKEFILE_LIST` and
+  `REPO_ROOT` redirection without changing Mixpanel transport behavior.
+
 ## 2026-06-19
 
 - Canonicalized nested JSON properties through built-in container operations,

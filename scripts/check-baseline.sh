@@ -30,7 +30,9 @@ for path in \
   mixpanel.py \
   test_mixpanel.py \
   scripts/check-baseline.sh \
+  scripts/test-makefile-root.sh \
   scripts/test-review-mutations.py \
+  docs/plans/2026-06-21-safe-make-root.md \
   docs/plans/2026-06-19-async-transport-boundary-review.md; do
   require_file "$path"
 done
@@ -70,10 +72,35 @@ done
 
 for make_contract in \
   'PYTHON ?= python2' \
+  'ifneq ($(origin MAKEFILE_LIST),file)' \
+  '$(error MAKEFILE_LIST must not be overridden)' \
+  'override REPO_ROOT := $(shell path=' \
+  '/bin/sed' \
+  '/usr/bin/dirname' \
+  '/bin/pwd -P' \
   '$(PYTHON) -m unittest test_mixpanel' \
   '$(PYTHON) scripts/test-review-mutations.py' \
+  'scripts/test-makefile-root.sh' \
+  'verify: lint test build docs root-test' \
   'check: verify mutations'; do
   require_text Makefile "$make_contract"
+done
+
+for root_contract in \
+  'Py Mixpanel' \
+  '24 target/override cases' \
+  '2 MAKEFILE_LIST rejection cases' \
+  'MAKEFILE_LIST must not be overridden'; do
+  require_text scripts/test-makefile-root.sh "$root_contract"
+done
+
+for root_evidence in \
+  'Status: Completed' \
+  'seven pre-existing public Make targets plus the root regression gate' \
+  '24 target and `REPO_ROOT` override cases' \
+  'Command-line and environment `MAKEFILE_LIST` overrides failed closed' \
+  'make check'; do
+  require_text docs/plans/2026-06-21-safe-make-root.md "$root_evidence"
 done
 
 WORKFLOW=.github/workflows/check.yml
