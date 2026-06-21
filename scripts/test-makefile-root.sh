@@ -6,6 +6,11 @@ TEMP_ROOT=$(mktemp -d "${TMPDIR:-/tmp}/py-mixpanel-root-control-XXXXXX")
 trap 'rm -rf "$TEMP_ROOT"' EXIT HUP INT TERM
 unset MAKEFILES MAKEFILE_LIST
 
+if grep -Fq '/usr/bin/sed' "$ROOT_DIR/Makefile"; then
+  printf '%s\n' 'Makefile root resolution must not depend on /usr/bin/sed' >&2
+  exit 1
+fi
+
 CONTROL_DIR="$TEMP_ROOT/control"
 CHECKOUT="$TEMP_ROOT/Py Mixpanel's [gate] \`touch MIXPANEL_BACKTICK_MARKER\`"
 COMMAND_LOG="$TEMP_ROOT/commands.log"
