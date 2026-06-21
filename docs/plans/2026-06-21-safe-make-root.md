@@ -17,13 +17,14 @@ reviewed checkout.
 ## Work Completed
 
 - Reject command-line and environment replacement of `MAKEFILE_LIST`.
-- Canonicalize the checked-in Makefile directory with pinned-container-compatible tools.
-- Add coverage for all seven pre-existing public Make targets plus the root regression gate.
+- Canonicalize the checked-in Makefile directory with pinned POSIX tools and export it only to recipes.
+- Add executed coverage for all seven pre-existing public Make targets plus the root regression gate.
 - Include the root policy in `make verify` and `make check`.
 
 ## Verification Completed
 
-- Python 2.7.18 and Python 3.12.8 each passed 39 tests and seven hostile mutations.
-- All 24 target and `REPO_ROOT` override cases passed from a shell-sensitive path.
+- 56 executed target and authority cases kept quality commands inside the checkout.
+- Hostile checkout backticks were blocked and dollar-substitution paths failed closed.
+- `MAKEFILES`, `SHELL`, `.SHELLFLAGS`, and invalid `PYTHON` authority were covered.
 - Command-line and environment `MAKEFILE_LIST` overrides failed closed.
-- Mixpanel source, credentials, callbacks, and transport behavior were unchanged.
+- `make check` remains the complete repository gate and no runtime source changed.

@@ -71,11 +71,16 @@ for test_name in \
 done
 
 for make_contract in \
+  'override SHELL := /bin/sh' \
+  'override .SHELLFLAGS := -c' \
+  '$(error MAKEFILES must be empty; repository verification requires this Makefile to be loaded alone)' \
   'PYTHON ?= python2' \
+  '$(error PYTHON must be python or python2)' \
   'ifneq ($(origin MAKEFILE_LIST),file)' \
   '$(error MAKEFILE_LIST must not be overridden)' \
   'override REPO_ROOT := $(shell path=' \
-  '/bin/sed' \
+  '/usr/bin/sed' \
+  'export REPO_ROOT' \
   '/usr/bin/dirname' \
   '/bin/pwd -P' \
   '$(PYTHON) -m unittest test_mixpanel' \
@@ -88,7 +93,11 @@ done
 
 for root_contract in \
   'Py Mixpanel' \
-  '24 target/override cases' \
+  '56 executed target/authority cases' \
+  'hostile backticks blocked' \
+  'dollar paths failed closed' \
+  '1 MAKEFILES preload rejection' \
+  '1 PYTHON rejection' \
   '2 MAKEFILE_LIST rejection cases' \
   'MAKEFILE_LIST must not be overridden'; do
   require_text scripts/test-makefile-root.sh "$root_contract"
@@ -97,7 +106,9 @@ done
 for root_evidence in \
   'Status: Completed' \
   'seven pre-existing public Make targets plus the root regression gate' \
-  '24 target and `REPO_ROOT` override cases' \
+  '56 executed target and authority cases' \
+  'Hostile checkout backticks were blocked and dollar-substitution paths failed closed' \
+  '`MAKEFILES`, `SHELL`, `.SHELLFLAGS`, and invalid `PYTHON` authority were covered' \
   'Command-line and environment `MAKEFILE_LIST` overrides failed closed' \
   'make check'; do
   require_text docs/plans/2026-06-21-safe-make-root.md "$root_evidence"
