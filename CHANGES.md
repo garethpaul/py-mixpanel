@@ -2,6 +2,9 @@
 
 ## 2026-06-21
 
+- Moved token-only `/track/` calls from credential-bearing GET query strings to
+  HTTPS POST form bodies while preserving payload encoding, callbacks, timeout,
+  response parsing, Python 2.7 compatibility, and the legacy `/import/` path.
 - Hardened all seven pre-existing Make gates against `MAKEFILE_LIST` and
   `REPO_ROOT` redirection without changing Mixpanel transport behavior.
 

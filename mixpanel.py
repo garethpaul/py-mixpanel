@@ -1,7 +1,7 @@
 """
 Event tracking - basic for mixpanel
 """
-TRACK_BASE_URL = "https://api.mixpanel.com/track/?data=%s"
+TRACK_BASE_URL = "https://api.mixpanel.com/track/"
 ARCHIVE_BASE_URL = "https://api.mixpanel.com/import/?data=%s&api_key=%s"
 REQUEST_TIMEOUT_SECONDS = 10
 MAX_RESPONSE_BODY_BYTES = 1024
@@ -149,6 +149,14 @@ def encode_payload(params):
   return quote(base64.b64encode(serialized), safe='')
 
 
+def build_track_request(params):
+  body = ("data=" + encode_payload(params)).encode("ascii")
+  request = urllib2.Request(TRACK_BASE_URL, data=body)
+  request.add_header("Content-Type", "application/x-www-form-urlencoded")
+  request.add_header("Content-Length", str(len(body)))
+  return request
+
+
 def request_mixpanel(url):
   try:
     resp = open_mixpanel_url(url)
@@ -232,11 +240,11 @@ class EventTracker(object):
       request_properties['time'] = int(time.time())
 
     params = {"event": event, "properties": request_properties}
-    data = encode_payload(params)
     if api_key:
+      data = encode_payload(params)
       url = ARCHIVE_BASE_URL % (data, quote(api_key, safe=''))
     else:
-      url = TRACK_BASE_URL % data
+      url = build_track_request(params)
     request_mixpanel(url)
 
     if callback is not None:
