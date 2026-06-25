@@ -117,6 +117,7 @@ class FailingStartThread(object):
 class EventTrackerTest(unittest.TestCase):
     def setUp(self):
         self.urls = []
+        self.requests = []
         self.timeouts = []
         self.responses = []
         self.response_body = "1"
@@ -132,7 +133,12 @@ class EventTrackerTest(unittest.TestCase):
         mixpanel.urllib2.urlopen = self.original_urlopen
         mixpanel.time.time = self.original_time
 
-    def urlopen(self, url, timeout=None):
+    def urlopen(self, request, timeout=None):
+        self.requests.append(request)
+        if hasattr(request, "get_full_url"):
+            url = request.get_full_url()
+        else:
+            url = request
         self.urls.append(url)
         self.timeouts.append(timeout)
         response = FakeResponse(
@@ -144,11 +150,29 @@ class EventTrackerTest(unittest.TestCase):
         self.responses.append(response)
         return response
 
+    def payload_from_request(self, request):
+        if hasattr(request, "get_full_url"):
+            url = request.get_full_url()
+            body = request.data
+            if not isinstance(body, str):
+                body = body.decode("ascii")
+            encoded = urlparse.parse_qs(body)
+        else:
+            url = request
+            encoded = urlparse.parse_qs(urlparse.urlparse(url).query)
+
+        parsed = urlparse.urlparse(url)
+        payload = json.loads(base64.b64decode(encoded["data"][0]))
+        return parsed, encoded, payload
+
     def payload_from_url(self, url):
         parsed = urlparse.urlparse(url)
-        query = urlparse.parse_qs(parsed.query)
-        payload = json.loads(base64.b64decode(query["data"][0]))
-        return parsed, query, payload
+        if "data" in urlparse.parse_qs(parsed.query):
+            return self.payload_from_request(url)
+        return self.payload_from_request(self.requests[self.urls.index(url)])
+
+    def request_header(self, request, name):
+        return request.get_header(name) or request.get_header(name.title())
 
     def test_track_posts_https_payload(self):
         callbacks = []
@@ -160,11 +184,23 @@ class EventTrackerTest(unittest.TestCase):
         tracker.track("Signed Up", {"distinct_id": "user-1"}, callback)
 
         self.assertEqual(1, len(self.urls))
-        parsed, query, payload = self.payload_from_url(self.urls[0])
+        request = self.requests[0]
+        parsed, form, payload = self.payload_from_request(request)
         self.assertEqual("https", parsed.scheme)
         self.assertEqual("api.mixpanel.com", parsed.netloc)
         self.assertEqual("/track/", parsed.path)
-        self.assertIn("data", query)
+        self.assertEqual("", parsed.query)
+        self.assertEqual("POST", request.get_method())
+        self.assertEqual(["data"], sorted(form))
+        self.assertIsInstance(request.data, bytes)
+        self.assertEqual(
+            "application/x-www-form-urlencoded",
+            self.request_header(request, "Content-type"),
+        )
+        self.assertEqual(
+            str(len(request.data)),
+            self.request_header(request, "Content-length"),
+        )
         self.assertEqual("Signed Up", payload["event"])
         self.assertEqual("project-token", payload["properties"]["token"])
         self.assertEqual("user-1", payload["properties"]["distinct_id"])
@@ -178,6 +214,64 @@ class EventTrackerTest(unittest.TestCase):
             [mixpanel.MAX_RESPONSE_BODY_BYTES + 1],
             self.responses[0].read_sizes,
         )
+
+    def test_track_keeps_event_data_out_of_url(self):
+        token = "private-token-marker/?#&=%0d%0aHost:attacker.invalid"
+        distinct_id = "private-distinct-marker/?#&=%0d%0a"
+        event = "Private Event Marker /?&=#%0d%0a"
+        property_value = "private-property-marker/?#&=%0d%0a"
+        tracker = mixpanel.EventTracker(token)
+
+        tracker.track(event, {
+            "distinct_id": distinct_id,
+            "private_property": property_value,
+        })
+
+        request = self.requests[0]
+        url = request.get_full_url()
+        self.assertEqual(mixpanel.TRACK_BASE_URL, url)
+        for private_value in (
+                "data", token, distinct_id, event, property_value,
+                "private_property"):
+            self.assertNotIn(private_value, url)
+
+    def test_track_form_body_round_trips_unicode_and_binary_bytes(self):
+        self.response_body = b"1"
+        tracker = mixpanel.EventTracker(u"project-token")
+        event = json.loads('"Signed \\u2603 Up"')
+        properties = {
+            "distinct_id": json.loads('"user-\\u2603"'),
+            "message": json.loads('"snowman \\u2603 and rocket \\ud83d\\ude80"'),
+        }
+
+        tracker.track(event, properties)
+
+        request = self.requests[0]
+        parsed, form, payload = self.payload_from_request(request)
+        self.assertEqual("", parsed.query)
+        self.assertEqual(["data"], sorted(form))
+        self.assertIsInstance(request.data, bytes)
+        self.assertEqual(event, payload["event"])
+        self.assertEqual(properties["distinct_id"], payload["properties"]["distinct_id"])
+        self.assertEqual(properties["message"], payload["properties"]["message"])
+
+    def test_track_posts_large_event_body_without_putting_it_in_url(self):
+        large_value = "x" * (1024 * 1024)
+        tracker = mixpanel.EventTracker("large-token")
+
+        tracker.track("Large Event", {
+            "distinct_id": "large-user",
+            "blob": large_value,
+        })
+
+        request = self.requests[0]
+        parsed, form, payload = self.payload_from_request(request)
+        self.assertEqual("", parsed.query)
+        self.assertGreater(len(request.data), 1024 * 1024)
+        self.assertEqual(str(len(request.data)), self.request_header(
+            request, "Content-length"))
+        self.assertEqual(large_value, payload["properties"]["blob"])
+        self.assertEqual(["data"], sorted(form))
 
     def test_track_closes_response_when_read_fails_without_leaking_details(self):
         callbacks = []
@@ -534,14 +628,16 @@ class EventTrackerTest(unittest.TestCase):
         self.assertEqual([mixpanel.REQUEST_TIMEOUT_SECONDS], self.timeouts)
         self.assertEqual([], callbacks)
 
-    def test_import_posts_https_payload_with_api_key(self):
+    def test_import_legacy_get_path_remains_unchanged_with_api_key(self):
         tracker = mixpanel.EventTracker("project-token", api_key="api-secret")
 
         tracker.track("Imported", {"distinct_id": "user-2"})
 
+        self.assertIsInstance(self.requests[0], str)
         parsed, query, payload = self.payload_from_url(self.urls[0])
         self.assertEqual("https", parsed.scheme)
         self.assertEqual("/import/", parsed.path)
+        self.assertEqual(["api_key", "data"], sorted(query))
         self.assertEqual(["api-secret"], query["api_key"])
         self.assertEqual("Imported", payload["event"])
         self.assertEqual("project-token", payload["properties"]["token"])

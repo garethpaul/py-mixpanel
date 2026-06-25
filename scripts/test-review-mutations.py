@@ -10,6 +10,21 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 MUTATIONS = [
     (
+        "token tracking falls back to a query-string GET",
+        '      url = build_track_request(params)\n',
+        '      url = TRACK_BASE_URL + "?data=" + encode_payload(params)\n',
+    ),
+    (
+        "track request loses form content type",
+        '  request.add_header("Content-Type", "application/x-www-form-urlencoded")\n',
+        '  request.add_header("Content-Type", "text/plain")\n',
+    ),
+    (
+        "track request reports an incorrect content length",
+        '  request.add_header("Content-Length", str(len(body)))\n',
+        '  request.add_header("Content-Length", str(len(body) + 1))\n',
+    ),
+    (
         "request exception details escape",
         '  except Exception:\n    resp = None\n  if resp is None:\n    raise MixpanelError("Mixpanel request failed")\n',
         '  except Exception:\n    raise\n  if resp is None:\n    raise MixpanelError("Mixpanel request failed")\n',

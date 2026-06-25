@@ -38,7 +38,7 @@ for path in \
 done
 
 for contract in \
-  'TRACK_BASE_URL = "https://api.mixpanel.com/track/?data=%s"' \
+  'TRACK_BASE_URL = "https://api.mixpanel.com/track/"' \
   'ARCHIVE_BASE_URL = "https://api.mixpanel.com/import/?data=%s&api_key=%s"' \
   'REQUEST_TIMEOUT_SECONDS = 10' \
   'MAX_RESPONSE_BODY_BYTES = 1024' \
@@ -47,6 +47,10 @@ for contract in \
   'list.__getitem__(value, index)' \
   'raise ValueError("Circular reference detected")' \
   'json.dumps(params, allow_nan=False)' \
+  'def build_track_request(params):' \
+  '("data=" + encode_payload(params)).encode("ascii")' \
+  'request.add_header("Content-Type", "application/x-www-form-urlencoded")' \
+  'request.add_header("Content-Length", str(len(body)))' \
   'raise MixpanelError("Mixpanel request failed")' \
   'status < 200 or status >= 300' \
   'response_body = resp.read(MAX_RESPONSE_BODY_BYTES + 1)' \
@@ -58,6 +62,11 @@ for contract in \
 done
 
 for test_name in \
+  test_track_posts_https_payload \
+  test_track_keeps_event_data_out_of_url \
+  test_track_form_body_round_trips_unicode_and_binary_bytes \
+  test_track_posts_large_event_body_without_putting_it_in_url \
+  test_import_legacy_get_path_remains_unchanged_with_api_key \
   test_track_redacts_request_errors_without_callback \
   test_track_preserves_primary_failure_when_response_close_also_fails \
   test_track_rejects_non_success_http_status_before_callback \

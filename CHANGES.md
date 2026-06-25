@@ -1,7 +1,17 @@
 # Changes
 
+## 2026-06-25
+
+- Verified token-only track events use HTTPS POST form bodies so event names,
+  project tokens, distinct IDs, properties, and large payloads stay out of URLs.
+- Preserved the legacy authenticated import request path and Python 2.7 support,
+  with 42 unit tests and 10 hostile transport and isolation mutations.
+
 ## 2026-06-21
 
+- Moved token-only `/track/` calls from credential-bearing GET query strings to
+  HTTPS POST form bodies while preserving payload encoding, callbacks, timeout,
+  response parsing, Python 2.7 compatibility, and the legacy `/import/` path.
 - Hardened all seven pre-existing Make gates against `MAKEFILE_LIST` and
   `REPO_ROOT` redirection without changing Mixpanel transport behavior.
 

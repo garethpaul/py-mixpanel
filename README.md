@@ -64,6 +64,13 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   `time`, so validation and payload enrichment do not mutate application data.
 - The configured project token is authoritative for outbound payloads; a
   caller property cannot redirect an event to another Mixpanel project.
+- Token-only tracking sends an HTTPS `POST` to `/track/` with the encoded event
+  in an `application/x-www-form-urlencoded` request body. The request URL does
+  not contain `data`, the project token, distinct ID, event name, or properties.
+- The optional `api_key` path still uses the repository's legacy `/import/`
+  query-string request and is intentionally unchanged by the `/track/`
+  transport correction. Modern service-account import support remains separate
+  design work.
 - Mixpanel HTTP requests use a ten-second timeout by default.
 - Opened Mixpanel HTTP responses are closed after reads succeed or fail so
   repeated tracking does not leak network resources.
