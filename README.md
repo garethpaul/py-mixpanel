@@ -47,6 +47,11 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 
 ## Running or Using the Project
 
+Read [`USAGE_AND_PRIVACY.md`](USAGE_AND_PRIVACY.md) before using real tokens,
+events, or distinct IDs. It documents the Python/runtime boundary, fixed legacy
+API assumptions, acknowledgement limits, consent ownership, and pseudonymous
+identifier guidance.
+
 - Import `EventTracker` from `mixpanel.py`.
 - Construct `EventTracker` with a nonblank Mixpanel project token; surrounding
   whitespace is trimmed and blank tokens raise `ValueError`.

@@ -26,6 +26,7 @@ for path in \
   Makefile \
   README.md \
   SECURITY.md \
+  USAGE_AND_PRIVACY.md \
   VISION.md \
   mixpanel.py \
   test_mixpanel.py \
@@ -36,6 +37,27 @@ for path in \
   docs/plans/2026-06-19-async-transport-boundary-review.md; do
   require_file "$path"
 done
+
+for guidance in \
+  'Python 2.7' \
+  'Python 3.11 and Python 3.14' \
+  'fixed US Mixpanel endpoints' \
+  'explicit consent' \
+  'pseudonymous distinct_id' \
+  'Do not use email addresses' \
+  'response body of 1 is only an ingestion acknowledgement' \
+  'does not implement retries, batching, regional endpoints, or $insert_id' \
+  'legacy import path' \
+  'Service Accounts'; do
+  require_text USAGE_AND_PRIVACY.md "$guidance"
+done
+require_text README.md '[`USAGE_AND_PRIVACY.md`](USAGE_AND_PRIVACY.md)'
+require_text SECURITY.md '`USAGE_AND_PRIVACY.md`'
+if grep -Fq 'Document Python version and Mixpanel API assumptions' "$ROOT_DIR/VISION.md" || \
+   grep -Fq 'Add deeper guidance for user consent and distinct ID handling' "$ROOT_DIR/VISION.md"; then
+  printf '%s\n' 'VISION.md must not retain completed runtime/privacy priorities.' >&2
+  exit 1
+fi
 
 for contract in \
   'TRACK_BASE_URL = "https://api.mixpanel.com/track/"' \

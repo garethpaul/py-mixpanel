@@ -1,5 +1,62 @@
 # Changes
 
+## 2026-06-26 06:28 - P1 - Define runtime, consent, and identity assumptions
+
+### Summary
+
+Closed both remaining documentation priorities with one contract-enforced guide
+for legacy API compatibility and privacy-safe analytics operation.
+
+### Work completed
+
+- Documented Python 2.7 and hosted Python 3.11/3.14 compatibility.
+- Documented fixed US endpoints, legacy form tracking, response acknowledgement
+  limits, and missing retry/batching/region/deduplication features.
+- Marked query-based import authentication as legacy and noted Service Accounts
+  for new integrations.
+- Added consent, opt-out, minimization, retention, deletion, and pseudonymous
+  distinct-ID guidance.
+
+### Threads
+
+- Started: runtime/privacy operator guide.
+- Continued: continuous open-source maintenance loop.
+- Stopped: none.
+
+### Files changed
+
+- `USAGE_AND_PRIVACY.md` — runtime, API, consent, and identity boundaries.
+- `README.md`, `SECURITY.md`, `VISION.md` — links and roadmap state.
+- `scripts/check-baseline.sh` — durable guide contract.
+- `docs/plans/2026-06-25-runtime-consent-assumptions.md` — completed plan.
+- `CHANGES.md` — this cycle record.
+
+### Validation
+
+- Red baseline — failed for the missing guide before documentation was added.
+- Current Python and pinned Python 2.7 `make check` — each passed 42 unit tests,
+  56 Make authority cases, 10 transport mutations, and the baseline contract.
+- Fourteen isolated guide mutations — all rejected across runtime, endpoint,
+  consent, identity, acknowledgement, feature, import, link, roadmap, and plan boundaries.
+- Hosted and CodeQL results pending.
+
+### Bugs / findings
+
+- P1: Existing docs did not warn that response `1` is not token validation or
+  that blind retries can duplicate events without `$insert_id` support.
+- P1: Existing docs required `distinct_id` but did not define consent ownership,
+  pseudonymity, environment scoping, or identifier lifecycle responsibilities.
+
+### Blockers
+
+- No live Mixpanel credentials or calls are required; API behavior is documented
+  from source and official references, not integration-tested here.
+
+### Next action
+
+- Run Python 2.7/current Python gates and hostile guide mutations, then require
+  exact-head hosted matrices and CodeQL before review and merge.
+
 ## 2026-06-25
 
 - Verified token-only track events use HTTPS POST form bodies so event names,
