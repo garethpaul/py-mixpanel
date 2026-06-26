@@ -34,7 +34,8 @@ for path in \
   scripts/test-makefile-root.sh \
   scripts/test-review-mutations.py \
   docs/plans/2026-06-21-safe-make-root.md \
-  docs/plans/2026-06-19-async-transport-boundary-review.md; do
+  docs/plans/2026-06-19-async-transport-boundary-review.md \
+  docs/plans/2026-06-25-hosted-evidence-reconciliation.md; do
   require_file "$path"
 done
 
@@ -53,6 +54,17 @@ for guidance in \
 done
 require_text README.md '[`USAGE_AND_PRIVACY.md`](USAGE_AND_PRIVACY.md)'
 require_text SECURITY.md '`USAGE_AND_PRIVACY.md`'
+if grep -Fq 'Hosted and CodeQL results pending.' "$ROOT_DIR/CHANGES.md" || \
+   grep -Fq 'Exact-head hosted Python matrices and CodeQL remain required before merge.' \
+     "$ROOT_DIR/docs/plans/2026-06-25-runtime-consent-assumptions.md"; then
+  printf '%s\n' 'Merged runtime/privacy records must not retain pending hosted evidence.' >&2
+  exit 1
+fi
+if grep -Fq 'Run Python 2.7/current Python gates and hostile guide mutations' \
+    "$ROOT_DIR/CHANGES.md"; then
+  printf '%s\n' 'CHANGES.md must not retain the completed runtime/privacy next action.' >&2
+  exit 1
+fi
 if grep -Fq 'Document Python version and Mixpanel API assumptions' "$ROOT_DIR/VISION.md" || \
    grep -Fq 'Add deeper guidance for user consent and distinct ID handling' "$ROOT_DIR/VISION.md"; then
   printf '%s\n' 'VISION.md must not retain completed runtime/privacy priorities.' >&2
