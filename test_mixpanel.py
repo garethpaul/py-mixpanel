@@ -660,6 +660,7 @@ class EventTrackerTest(unittest.TestCase):
 
         self.assertEqual(1, len(FakeThread.created))
         self.assertEqual(FakeThread.created[0], thread)
+        self.assertTrue(thread.daemon)
         self.assertTrue(thread.started)
         self.assertEqual(1, len(self.urls))
 

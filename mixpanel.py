@@ -279,5 +279,6 @@ class EventTracker(object):
       'token': token,
       'api_key': api_key,
     })
+    t.daemon = True
     t.start()
     return t

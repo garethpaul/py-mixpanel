@@ -59,6 +59,11 @@ MUTATIONS = [
         '    t = threading.Thread(target=self._track_prepared, kwargs={\n',
         '    t = threading.Thread(target=self.track, kwargs={\n',
     ),
+    (
+        "async worker can hold interpreter shutdown",
+        '    t.daemon = True\n    t.start()\n',
+        '    t.start()\n',
+    ),
 ]
 
 

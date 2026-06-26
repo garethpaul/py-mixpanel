@@ -1,5 +1,13 @@
 # Changes
 
+## 2026-06-26 - P2 - Bound asynchronous shutdown ownership
+
+- Made `track_async` workers daemon threads before launch so best-effort
+  analytics cannot hold interpreter shutdown for the network timeout.
+- Preserved the returned thread handle so callers can explicitly `join()` when
+  an event attempt must finish before exit.
+- Added focused regression and hostile mutation coverage plus operator guidance.
+
 ## 2026-06-26 06:48 - P2 - Reconcile hosted verification evidence
 
 ### Summary

@@ -70,6 +70,9 @@ JSON-incompatible async properties are rejected before a worker is created or
 any network request is opened.
 Nested async properties are detached before worker construction so caller-side
 mutations cannot race with payload serialization or callback delivery.
+Async tracking workers are daemon threads so analytics cannot delay process
+shutdown; callers that require completion must explicitly join the returned
+worker.
 
 Nested container subclasses are canonicalized through built-in dictionary,
 list, and tuple operations. Cycles and unsupported JSON values fail before any

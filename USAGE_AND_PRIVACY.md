@@ -38,6 +38,10 @@ jurisdiction. This library does not display consent UI, remember opt-out state,
 or automatically stop collection. The caller owns those controls and must avoid
 calling the wrapper when analytics are disabled or consent is withdrawn.
 
+`track_async` is best-effort and returns a daemon thread. It will not keep the
+interpreter alive during shutdown. Call `join()` on the returned thread when an
+application explicitly requires the attempt to finish before exit.
+
 Collect only event names and properties needed for a stated product purpose.
 Do not send secrets, message contents, precise location, health data, financial
 data, or other sensitive fields merely because JSON encoding accepts them.
