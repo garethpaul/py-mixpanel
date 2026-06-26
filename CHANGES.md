@@ -1,5 +1,38 @@
 # Changes
 
+## 2026-06-26 06:48 - P2 - Reconcile hosted verification evidence
+
+### Summary
+
+Replaced stale pre-merge placeholders in the latest completed maintenance
+record with the exact hosted and post-merge verification evidence.
+
+### Work completed
+
+- Recorded successful hosted Python 2.7, Python 3.11, Python 3.14, Actions
+  CodeQL, and Python CodeQL checks on the reviewed implementation head.
+- Recorded successful post-merge Check and CodeQL runs on merge commit
+  `9f08738403600ab22050b88d814484cafa132e6f`.
+- Removed the already-completed local/hosted validation next action.
+- Added a baseline contract preventing merged runtime/privacy records from
+  retaining pending evidence or completed next actions.
+
+### Threads
+
+- None; this reconciles authoritative hosted state only.
+
+### Files changed
+
+- `CHANGES.md` and the runtime/privacy plan — exact verification evidence.
+- `scripts/check-baseline.sh` — stale-evidence regression contract.
+- `docs/plans/2026-06-25-hosted-evidence-reconciliation.md` — completed record.
+
+### Validation
+
+- Red baseline failed on the stale pending evidence before documentation edits.
+- Current Python and pinned Python 2.7 `make check` evidence is recorded in the
+  completed reconciliation plan.
+
 ## 2026-06-26 06:28 - P1 - Define runtime, consent, and identity assumptions
 
 ### Summary
@@ -38,7 +71,12 @@ for legacy API compatibility and privacy-safe analytics operation.
   56 Make authority cases, 10 transport mutations, and the baseline contract.
 - Fourteen isolated guide mutations — all rejected across runtime, endpoint,
   consent, identity, acknowledgement, feature, import, link, roadmap, and plan boundaries.
-- Hosted and CodeQL results pending.
+- Reviewed head `b7f1d0cf09b56875d4edc421c1146bae2d2112b6`
+  passed hosted Python 2.7, Python 3.11, Python 3.14, Actions CodeQL, Python
+  CodeQL, and the aggregate CodeQL check.
+- Merge commit `9f08738403600ab22050b88d814484cafa132e6f`
+  subsequently passed post-merge Check run `28221119276` and CodeQL run
+  `28221118794`.
 
 ### Bugs / findings
 
@@ -54,8 +92,8 @@ for legacy API compatibility and privacy-safe analytics operation.
 
 ### Next action
 
-- Run Python 2.7/current Python gates and hostile guide mutations, then require
-  exact-head hosted matrices and CodeQL before review and merge.
+- None for this completed documentation cycle; future work requires a
+  reproduced source defect, official API change, or reviewed caller need.
 
 ## 2026-06-25
 

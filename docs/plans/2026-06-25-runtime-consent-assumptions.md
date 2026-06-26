@@ -33,4 +33,8 @@ retry/deduplication gaps, opt-out ownership, or pseudonymous identifier policy.
   56 Make authority cases, 10 transport mutations, and the baseline contract.
 - Fourteen hostile guide mutations rejected runtime, endpoint, consent,
   identity, acknowledgement, feature, import, link, roadmap, and plan drift.
-- Exact-head hosted Python matrices and CodeQL remain required before merge.
+- Reviewed head `b7f1d0cf09b56875d4edc421c1146bae2d2112b6`
+  passed hosted Python 2.7, Python 3.11, Python 3.14, Actions CodeQL, Python
+  CodeQL, and the aggregate CodeQL check before merge.
+- Merge commit `9f08738403600ab22050b88d814484cafa132e6f`
+  passed post-merge Check run `28221119276` and CodeQL run `28221118794`.
