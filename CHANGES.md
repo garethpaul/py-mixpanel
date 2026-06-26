@@ -1,5 +1,19 @@
 # Changes
 
+## 2026-06-26 - P2 - Bound asynchronous shutdown ownership
+
+- Made `track_async` workers daemon threads before launch so best-effort
+  analytics cannot hold interpreter shutdown for the network timeout.
+- Preserved the returned thread handle so callers can explicitly `join()` when
+  an event attempt must finish before exit.
+- Added focused regression and hostile mutation coverage plus operator guidance.
+- Implementation head `56b1c7a1556ca4f4ed92a1d796103e7bb945d3c5`
+  passed hosted Python 2.7, Python 3.11, Python 3.14, CodeQL actions/Python
+  analyses, and the aggregate gate on pull request #20.
+- Required Codex review stopped before analysis because OpenAI WebSocket and
+  HTTPS transports returned HTTP 401; immutable manual fallback review found
+  no actionable defects.
+
 ## 2026-06-26 06:48 - P2 - Reconcile hosted verification evidence
 
 ### Summary

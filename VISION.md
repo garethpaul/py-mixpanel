@@ -39,6 +39,7 @@ Priority:
 - Reject non-finite numeric properties before requests or worker threads start
 - Detach nested async properties before worker threads start
 - Snapshot the configured project token and API key before async worker launch
+- Keep async workers daemonized and require explicit caller joins for shutdown delivery
 - Keep request failure behavior stable, detail-safe, and covered by mocks
 - Keep request timeouts explicit
 - Close Mixpanel HTTP responses after successful and failed reads

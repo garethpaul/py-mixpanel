@@ -83,6 +83,9 @@ identifier guidance.
   acknowledgement. Rejected, empty, or unexpected bodies raise `MixpanelError`
   before the success callback runs.
 - Use `track_async` only when background submission is expected by the caller.
+- `track_async` returns a daemon worker so best-effort analytics cannot hold
+  interpreter shutdown; call `join()` on the returned thread when delivery must
+  complete before process exit.
 - Callbacks must be callable when provided; invalid callbacks raise
   `ValueError` before HTTP requests or async worker threads are started.
 - Invalid async event names, property containers, and distinct IDs raise
