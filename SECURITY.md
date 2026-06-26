@@ -24,6 +24,9 @@ Helpful reports include:
 
 ## Project Security Posture
 
+Follow `USAGE_AND_PRIVACY.md` for consent, data minimization, fixed endpoint,
+legacy import-authentication, and pseudonymous `distinct_id` boundaries.
+
 - This repository appears to be a public sample, documentation, or utility project. The active security scope is the code and documentation on the default branch.
 - Review found authentication, token, or session-related code paths; changes in those areas should receive security-focused review before merge.
 - Review found external API integrations or credential-adjacent configuration; changes in those areas should receive security-focused review before merge.

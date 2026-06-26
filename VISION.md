@@ -56,8 +56,8 @@ Priority:
 
 Next priorities:
 
-- Document Python version and Mixpanel API assumptions
-- Add deeper guidance for user consent and distinct ID handling
+- Keep runtime, endpoint, consent, and identity guidance synchronized with
+  source behavior and official Mixpanel API changes
 
 Contribution rules:
 
