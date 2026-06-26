@@ -20,3 +20,10 @@ caller with an explicit delivery requirement can call `join()` before shutdown.
 - A hostile mutation removes the daemon assignment and must fail the suite.
 - Full Python 2/3 `make check`, hosted, and exact-head review evidence is
   recorded before merge.
+- Pull request #20 implementation head
+  `56b1c7a1556ca4f4ed92a1d796103e7bb945d3c5` passed hosted Python 2.7,
+  Python 3.11, Python 3.14, CodeQL actions/Python analyses, and the aggregate
+  gate.
+- Required Codex review stopped before analysis because OpenAI WebSocket and
+  HTTPS transports returned HTTP 401. Local, remote, and pull-request heads
+  matched, and immutable manual fallback review found no actionable defects.
