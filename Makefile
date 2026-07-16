@@ -21,9 +21,9 @@ endif
 
 docs:
 	@cd "$$REPO_ROOT" && for plan in docs/plans/*.md; do \
-		test -f "$$plan"; \
-		grep -q "Status: Completed" "$$plan"; \
-		grep -q "make check" "$$plan"; \
+		test -f "$$plan" || { printf '%s\n' "docs: no such plan file: $$plan" >&2; exit 1; }; \
+		grep -q "Status: Completed" "$$plan" || { printf '%s\n' "docs: $$plan must record 'Status: Completed'" >&2; exit 1; }; \
+		grep -q "make check" "$$plan" || { printf '%s\n' "docs: $$plan must record 'make check' verification" >&2; exit 1; }; \
 	done
 
 lint:
